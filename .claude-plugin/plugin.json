@@ -1,0 +1,23 @@
+{
+  "name": "vitola-skills",
+  "displayName": "Vitola Skills",
+  "version": "0.1.0",
+  "description": "Project-agnostic skills and agents for scoping tickets, driving a stacked-PR feature to done, verifying it in a real browser and API, and maintaining the PRs afterwards.",
+  "author": {
+    "name": "Victor",
+    "url": "https://github.com/vitoladev"
+  },
+  "repository": "https://github.com/vitoladev/skills",
+  "homepage": "https://github.com/vitoladev/skills",
+  "keywords": [
+    "orchestration",
+    "stacked-prs",
+    "gh-stack",
+    "ticket-scoping",
+    "verification",
+    "playwright",
+    "code-review",
+    "devcontainer"
+  ],
+  "skills": "./.agents/skills/"
+}
