@@ -1,9 +1,8 @@
 ---
 name: resolve-pr-comment
 description: |
-  Reply on a GitHub pull request review thread and resolve it using gh. Use
-  when invoked as /resolve-pr-comment, when asked to reply to a PR review
-  comment, resolve a review thread, or mark feedback as done.
+  Reply on a pull request review thread and resolve it with gh. Use when
+  asked to answer a review comment or mark feedback done.
 ---
 
 # Resolve PR comment

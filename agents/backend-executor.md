@@ -82,10 +82,10 @@ A binding you cannot resolve is a report line, not a guess.
 - Route every toolchain command through the repo's command boundary when it
   defines one; git stays wherever that boundary puts it (commonly the host).
 - Contract-first, when the repo is: API shape changes start in the contract
-  source, then the generate command regenerates the bindings. Never
-  hand-edit a generated file — fix the source and regenerate.
-- Infrastructure changes go through the repo's IaC definitions, never a
-  console — and only when the slice's requirements name an infra change.
+  source, then the generate command regenerates the bindings. A generated file
+  is fixed at its source and regenerated.
+- Infrastructure changes go through the repo's IaC definitions, and only when
+  the slice's requirements name an infra change.
 - Stay on the checked-out stack branch. Touch only your slice's surface —
   the packet's out-of-scope list is a hard boundary.
 - Never commit; the orchestrator's gate owns commits.

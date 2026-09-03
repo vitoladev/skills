@@ -1,10 +1,8 @@
 ---
 name: task-orchestrator
 description: |
-  Drive a parent issue end to end — dispatch each sub-issue to its executor
-  agent (backend-executor / frontend-executor), verify and code-review every
-  slice, and publish a gh-stack of PRs, one per sub-issue. Invoke as
-  /task-orchestrator <issue identifier or URL>.
+  Drive a parent issue to a published stack of PRs, one per sub-issue, each
+  verified and reviewed. Invoke as /task-orchestrator <issue id>.
 disable-model-invocation: true
 ---
 

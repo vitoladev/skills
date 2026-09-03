@@ -1,10 +1,9 @@
 ---
 name: create-pr
 description: |
-  Open this branch's pull request: body from the repo template, and preview
-  media uploaded into the body itself with gh --attach. Use when invoked as
-  /create-pr, when a branch has commits but no PR, or after gh stack puts a
-  new layer on a stack.
+  Open this branch's pull request: body from the repo template, preview media
+  uploaded into it with gh --attach. Use when a branch has commits but no PR,
+  or after gh stack adds a layer.
 ---
 
 # Create PR
@@ -112,39 +111,17 @@ of it. Cropping or re-staging the after shot is not a before.
 
 ### Attaching
 
-`--attach` needs **gh 2.99.0 or newer**:
+`gh pr edit --attach` uploads each file and rewrites the local path the body
+references. Its version gate, alt-text rules, format limits and the
+authenticated check are in
+[`../pr-preview-media/references/gh-attach.md`](../pr-preview-media/references/gh-attach.md)
+— read it before the first attach.
 
 ```bash
-gh --version
-```
-
-Reference each file by its local path in the body markdown, then attach it.
-Run `gh` **from the directory holding the media** so `./name.mp4` resolves;
-GitHub uploads each file, rewrites that path to a
-`github.com/user-attachments/assets/<uuid>` URL, and keeps the alt text:
-
-```bash
-# body contains:  ![checkout flow](./checkout.mp4) and ![events](./events-list.png)
 gh pr edit <n> --body-file <tmp> \
   --attach './checkout.mp4' \
   --attach './events-list.png#Events list rendering three published events'
 ```
-
-`--attach` repeats once per file, up to 50 per command.
-
-**Video takes no alt text.** `--attach './flow.mp4#…'` fails with `cannot set
-alt text on video`; pass the bare path. Write the body reference as
-`![what it shows](./flow.mp4)` anyway — gh replaces the whole markdown with a
-bare asset URL on its own line, which is what makes GitHub draw a player.
-Images keep `![alt](url)`, so their `#` suffix is worth writing.
-
-PNG, JPEG, GIF, WebP, SVG, MP4, MOV and WebM upload; images cap at 10 MB,
-video at 10 MB on Free and 100 MB on paid plans. GitHub Enterprise Server does
-not serve this yet. **A partial upload still rewrites the body**, so check
-every asset in step 5.
-
-Below 2.99.0, or on GHES, publish through
-[`../pr-preview-media/media-branch-fallback.md`](../pr-preview-media/media-branch-fallback.md).
 
 A PR with no user-visible surface — backend, infra, docs — replaces the whole
 section with `Not applicable — no user-visible surface changes.` A diff that
@@ -157,20 +134,13 @@ changed.
 gh pr view <n> --json number,url,title,baseRefName,body
 ```
 
-Confirm each asset resolves rather than trusting the markdown — an attach that
-partly failed still rewrites the body. **On a private repo the assets are
-access-controlled and an anonymous fetch answers 404 for a perfectly good
-file.** Do not read that as a failed upload. Check as the viewer does:
-
-```bash
-curl -s -o /dev/null -w '%{http_code} %{content_type}\n' -L \
-  -H "Authorization: token $(gh auth token)" <asset-url>
-```
-
-Expect `200 image/png` or `200 video/mp4`.
+Then run the authenticated asset check from
+[`../pr-preview-media/references/gh-attach.md`](../pr-preview-media/references/gh-attach.md).
+An attach that partly failed still rewrites the body, so the markdown looking
+right proves nothing.
 
 Done when the PR is open against the right base; every surface the diff
 touches appears in Preview, each changed one with both states and each
-greenfield one saying so; every asset resolves as an authenticated viewer; and
-a reviewer reading only the body would describe the same slice
+greenfield one saying so; every asset answers 200 as an authenticated viewer;
+and a reviewer reading only the body would describe the same slice
 `git diff <base>...HEAD` shows.

@@ -1,11 +1,9 @@
 ---
 name: pr-preview-media
 description: |
-  Turn a passing frontend verification into the MP4s and stills a PR's Preview
-  section needs, and upload them into the body with `gh pr edit --attach`. Use
-  after a frontend verification passes on this branch, when the
-  task-orchestrator publish step names it, or when asked to put feature
-  recordings into a pull request.
+  Turn a passing frontend verification into the MP4s and stills a PR's
+  Preview section needs, and upload them into the body with gh --attach. Use
+  once a frontend verification passes on this branch.
 ---
 
 # PR preview media
@@ -98,56 +96,18 @@ change.
 to point at the uploaded asset, so the media lives in GitHub's own attachment
 store. No media branch, no raw URLs, nothing to clean up when the PR closes.
 
-**Requires `gh` 2.99.0 or newer.** Check first; on anything older, or on
-GitHub Enterprise Server, the flag does not exist and
-[`media-branch-fallback.md`](media-branch-fallback.md) is the path.
+Its version gate, alt-text rules, format limits and the authenticated check
+that proves an upload landed are in
+[`references/gh-attach.md`](references/gh-attach.md). Read it before the first
+attach: several of its rules bite silently.
 
 ```bash
-gh --version
-```
-
-Reference each file by its **local path** in the body markdown, then attach
-it. Run `gh` **from the directory holding the media** so `./name.mp4`
-resolves:
-
-```bash
-# body contains:  ![checkout flow](./checkout.mp4) and ![events](./events.png)
 gh pr edit <n> --body-file <body.md> \
   --attach './checkout.mp4' \
   --attach './events.png#Events list rendering three published events'
 ```
 
-- Alt text follows the path after `#`. Without it the filename is used.
-- **Video takes no alt text** — `--attach './flow.mp4#…'` fails. Write the
-  markdown reference `![what it shows](./flow.mp4)` anyway; gh replaces the
-  whole reference with a player.
-- An attachment the body does not reference is appended to the end instead.
-- PNG, JPEG, GIF, WebP, SVG, MP4, MOV and WebM upload; images cap at 10 MB,
-  video at 10 MB on Free and 100 MB on paid plans. GitHub Enterprise Server
-  does not serve this yet.
-- `--attach` repeats once per file, up to 50 per command.
-- Without a body flag, the PR keeps the body it has and attachments are
-  appended.
-- On a partial failure the PR is still updated with what succeeded, and the
-  command exits non-zero — so check the status, not just the printed URL.
-
-## 4. Verify what rendered
-
-Confirm each asset resolves rather than trusting the markdown — a partial
-upload still rewrites the body. **On a private repo the assets are
-access-controlled and an anonymous fetch answers 404 for a perfectly good
-file**, so check as the viewer does, with credentials:
-
-```bash
-gh pr view <n> --json body -q .body \
-  | grep -o 'https://github.com/user-attachments/assets/[^)[:space:]]*' \
-  | while read -r u; do
-      curl -s -o /dev/null -w "%{http_code} %{content_type} $u\n" -L \
-        -H "Authorization: token $(gh auth token)" "$u"
-    done
-```
-
-Expect `200 image/png` or `200 video/mp4` per asset. Done when every surface the diff touches carries the
-form its proof needs — MP4 for an interaction, a still for a state; every
-surface that already existed also has a before from the base branch at the
-same width; and every asset resolves in the rendered page.
+Done when every surface the diff touches carries the form its proof needs,
+MP4 for an interaction and a still for a state; every surface that already
+existed also has a before from the base branch at the same width; and every
+asset answers 200 to the authenticated check.

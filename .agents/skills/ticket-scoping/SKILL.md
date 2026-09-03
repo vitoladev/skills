@@ -1,11 +1,9 @@
 ---
 name: ticket-scoping
 description: |
-  Turn a PRD/spec into a parent issue plus backend/frontend/contract/infra
-  sub-issues shaped for task-orchestrator's executors to consume — numbered
-  Requirements, a pressure-tested Implementation plan, and a Verify line per
-  sub-issue. Invoke as /ticket-scoping <spec text, a spec file section, or an
-  existing issue identifier to re-scope>.
+  Turn a PRD into a parent issue plus labelled sub-issues an executor can
+  consume: numbered Requirements, a pressure-tested Implementation plan, a
+  Verify line each. Invoke as /ticket-scoping <spec or issue id>.
 disable-model-invocation: true
 ---
 

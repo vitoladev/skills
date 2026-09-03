@@ -1,11 +1,9 @@
 ---
 name: devcontainer
 description: |
-  Per-worktree devcontainer workflow — every toolchain command runs inside a
-  container, one container per git worktree, so parallel agents never collide.
-  Use when: starting work in a new or existing worktree, running
-  build/test/lint/dev commands, verifying a running server or endpoint,
-  tearing down a finished worktree, or debugging container/mount/cache errors.
+  Per-worktree container workflow: toolchain commands run inside, git runs on
+  the host. Use when entering or leaving a worktree, running build/test/lint
+  commands, or debugging container mount and cache errors.
 ---
 
 # Per-worktree devcontainers

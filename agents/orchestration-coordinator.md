@@ -45,7 +45,7 @@ these in §1, before the first dispatch, from the repo's `CLAUDE.md` /
   a wrapper skill; git conventionally stays on the host.
 - **Optional stages** — `promote-e2e`, `pr-preview-media`, a PR template.
   Each runs only if the repo provides it; a missing one is skipped and said
-  so in the report, never improvised.
+  so in the report.
 
 A binding you cannot resolve is a stop-and-report, not a guess — except the
 optional stages, which are simply skipped.
@@ -89,8 +89,8 @@ checked out.
 
 Every run keeps a local trace at
 `docs/ai/executions/<parent-id>-EXECUTION.md`. Keep the directory
-gitignored: it is per-developer scratch, never committed, never part of a
-PR, and never mentioned in the PR bodies or the final report.
+gitignored: it is per-developer scratch, local to the machine that ran it and
+absent from the PR bodies and the final report.
 
 Open it the moment §1 resolves the issue set — before the first dispatch —
 and **write each update to disk as it happens**, never buffered to the end.
@@ -211,10 +211,9 @@ Three sub-gates, in order, all on the slice's own branch:
    repo's standards doc (when that doc partitions a diff, read only the
    partition sections the diff touches), **Spec** = the sub-issue's
    identifier and its numbered Requirements. One review invocation per slice
-   is the ceiling — never per partition. The gate is its verdict against the
+   is the ceiling, whatever the diff spans. The gate is its verdict against the
    severity ladder: **zero findings in the top two bands**. Lower bands go
-   in the final report as advisory notes for the user's triage — never
-   auto-fixed.
+   in the final report as advisory notes the user triages.
 
 On a top-band finding from either verify or review:
 

@@ -1,23 +1,22 @@
 ---
 name: maintain-pr-description
 description: |
-  Rewrite the current branch's pull request body (and title if needed) so a
-  reviewer reading only the summary sees HEAD, not the first submit. Use when
-  invoked as /maintain-pr-description, after landing commits on a PR branch,
-  after review-driven fixes, or when the PR body would lie.
+  Rewrite a pull request body so a reviewer reading only the summary sees
+  HEAD, not the first submit. Use after landing commits or review-driven
+  fixes on a branch whose PR is already open.
 ---
 
 # Maintain PR description
 
 The body is what a reviewer reads. It is written once at submit; every later
 commit on the branch makes it stale. Repair it in place. `gh` runs on the
-host. Do not use GitHub MCP as the primary path. Do not post a comment instead
-of editing the body.
+host, through `gh`. The body is what you edit; a comment is a different
+artifact and does not repair it.
 
 ## 1. This branch's PR
 
-Stacked work: the current branch owns one PR. Do not edit the stack top unless
-that is the checked-out branch.
+Stacked work: the current branch owns one PR. Edit the PR of the branch that
+is checked out.
 
 ```bash
 gh stack view --json 2>/dev/null   # empty/error when this is not a stack
@@ -48,8 +47,8 @@ Read the current body first. Preserve:
 - The existing generated-by footer, if any
 - A stacking note naming the layer below
 
-Rewrite so the rest matches HEAD, in the repo's own vocabulary. Do not invent
-verifier output, coverage numbers, or a code-review verdict you did not run.
+Rewrite so the rest matches HEAD, in the repo's own vocabulary. Every number,
+verdict and command output traces to a run you performed.
 
 If `.github/PULL_REQUEST_TEMPLATE.md` exists, keep its headings. Otherwise
 keep the body's current headings. If the body is still auto-generated text (no
@@ -81,13 +80,13 @@ and not only the latest commit. Drop bullets the diff no longer contains; add
 ones it now does (tests, docs, skills).
 
 **Acceptance criteria.** Leave `[x]` as `[x]` unless a later verifier run
-failed it. Do not add criteria the issue or contract does not require. A
+failed it. The criteria are the ones the issue and contract require. A
 Blocked criterion stays visible.
 
 **Tests.** Only numbers and commands you observed, or keep the last recorded
 run and note it is from an earlier SHA.
 
-**Review.** Do not claim a new PASS. Name the last code-review SHA if known.
+**Review.** Report the last code-review verdict and its SHA, as it stands.
 Remove findings the current code no longer has; leave standing ones (and say
 they still stand).
 

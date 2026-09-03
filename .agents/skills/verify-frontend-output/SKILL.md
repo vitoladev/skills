@@ -1,10 +1,9 @@
 ---
 name: verify-frontend-output
 description: |
-  Verify user-visible browser behavior with Playwright against the running dev
-  servers. Use after frontend changes, when a task-orchestrator dispatch names
-  it, or when asked to prove a frontend acceptance criterion or record a
-  browser demo.
+  Prove user-visible behaviour in a real browser at an honest proof level.
+  Use after frontend changes, to prove a frontend acceptance criterion, or to
+  record a demo.
 ---
 
 # Verify frontend output
@@ -129,3 +128,10 @@ Report the scenario, proof level, verdict, assertion output, screenshot/video
 paths, and console/network observations. List criteria left unverified and any
 feature-map drift. Leave useful scratch specs in place for a possible
 `promote-e2e` pass; remove redundant or sensitive evidence.
+
+Done when every user-observable criterion holds a verdict at a declared proof
+level, backed by a state you reached through the UI and evidence from that
+run; every Failed verdict names its cause class and its smallest fix; every
+Blocked verdict names the exact tooling or external gate; and every scenario's
+console and network observations have been read rather than assumed. Partial
+execution is Blocked, never Passed.

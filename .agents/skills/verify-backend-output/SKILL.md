@@ -1,10 +1,9 @@
 ---
 name: verify-backend-output
 description: |
-  Verify observable API behavior by wiring real HTTP requests and driving
-  multi-step flows. Use after backend changes (handlers, store, contract
-  wiring), when a task-orchestrator dispatch names it, or when asked to prove
-  a backend acceptance criterion.
+  Prove API behaviour with executed requests and multi-step flows, not code
+  reading. Use after backend changes, or to prove a backend acceptance
+  criterion.
 ---
 
 # Verify backend output
@@ -90,3 +89,10 @@ the response, and for failures a cause classification (product bug, contract
 drift, environment, spec ambiguity) plus the smallest proposed fix. Redact
 secrets and real user data; fixture data can be quoted whole. Close with the
 criteria left unverified and why.
+
+Done when every backend acceptance criterion holds a verdict backed by a
+request you sent and a response you read; every Failed verdict names its cause
+class and its smallest fix; every Blocked verdict names the gate that stopped
+it; and the contract regen, the package's tests and its linter have each been
+run and reported. A criterion with no scenario is unverified, and unverified
+is reported, not omitted.

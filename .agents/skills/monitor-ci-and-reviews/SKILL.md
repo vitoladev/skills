@@ -2,9 +2,8 @@
 name: monitor-ci-and-reviews
 description: |
   Watch a pull request's checks and incoming review until they settle, then
-  triage what came back. Use when invoked as /monitor-ci-and-reviews, after
-  pushing to a PR branch, or when asked to wait for CI, for a review, or for a
-  PR to go green.
+  triage what came back. Use after pushing to a PR branch, or when asked to
+  wait for CI or for a PR to go green.
 ---
 
 # Monitor CI and reviews

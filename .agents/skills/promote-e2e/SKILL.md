@@ -1,10 +1,9 @@
 ---
 name: promote-e2e
 description: |
-  Promote the throwaway browser specs a verify-frontend-output run left behind
-  into the committed e2e suite. Use after a frontend verification passes, when
-  a task-orchestrator gate names it, or when asked to turn verification
-  scenarios into durable e2e coverage.
+  Promote the throwaway browser specs a verification left behind into the
+  committed e2e suite. Use after a frontend verification passes, when durable
+  coverage should outlive the run.
 ---
 
 # Promote verification specs to e2e coverage
@@ -54,3 +53,9 @@ suite is not:
 The e2e command green against the running dev servers, including the promoted
 specs. Report: scenarios promoted (with their new spec names), scenarios
 skipped and why.
+
+Done when every scenario from the verification report has been either promoted
+or skipped with its reason; each promoted spec asserts against a fetched or
+mocked response rather than pinned seed data; the committed suite runs green
+including them; and the scratch directory is gone. A scenario left unexamined
+is not a skip.

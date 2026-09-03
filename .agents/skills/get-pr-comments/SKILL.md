@@ -1,22 +1,20 @@
 ---
 name: get-pr-comments
 description: |
-  Summarise review threads and discussion comments on the current branch's
-  pull request. Use when invoked as /get-pr-comments, when asked to fetch or
-  summarise PR comments, review feedback, or GitHub review threads, or before
-  deciding whether a review comment is worth fixing.
+  Summarise review threads on the current branch's pull request, grouped by
+  what deserves a fix. Use when asked about PR feedback, or before deciding
+  whether a review comment is worth acting on.
 ---
 
 # Get PR comments
 
-Concise, actionable summary of feedback on **this branch's** PR. Do not fix
-anything unless asked. `gh` runs on the host, never inside the repo's command
-boundary. Do not use GitHub MCP as the primary fetch path.
+Concise, actionable summary of feedback on **this branch's** PR. Summarise and
+stop; fixing is a separate ask. Fetch through `gh`, on the host.
 
 ## 1. Resolve this branch's PR
 
-Stacked work: the current branch owns one PR. Do not summarise the stack top
-unless that is the checked-out branch.
+Stacked work: the current branch owns one PR. Summarise the PR of the branch
+that is checked out.
 
 ```bash
 gh stack view --json 2>/dev/null   # empty/error when this is not a stack
@@ -81,7 +79,7 @@ Skip noise: resolved + outdated with no new reply, bot boilerplate, and
 threads the user already handled in this conversation.
 
 Use the repo's own domain vocabulary — its glossary when it has one, its
-schema and type names otherwise. Do not drift to synonyms the codebase avoids.
+schema and type names otherwise. Reuse the codebase's own words.
 
 Group remaining items:
 
@@ -96,8 +94,7 @@ For each item include: path + line, author, unresolved/resolved, the GraphQL
 thread `id`, and the latest comment's REST `databaseId` (needed by
 `/resolve-pr-comment`).
 
-Do not treat a review comment as a task until it is true against the current
-code. Say so when it is already fixed, outdated, or based on a wrong model.
+Treat a review comment as a task once it holds against the current code. Say so when it is already fixed, outdated, or based on a wrong model.
 
 ## 4. Output
 
