@@ -1,98 +1,145 @@
 ---
 name: pr-preview-media
 description: |
-  Turn a frontend PR's browser-test CI artifact into GIFs + stills and embed
-  them in the PR body's Preview section. Use after the e2e CI job goes green,
-  when the task-orchestrator publish step names it, or when asked to put
-  feature recordings into a PR.
+  Turn a passing frontend verification into the MP4s and stills a PR's Preview
+  section needs, and upload them into the body with `gh pr edit --attach`. Use
+  after a frontend verification passes on this branch, when the
+  task-orchestrator publish step names it, or when asked to put feature
+  recordings into a pull request.
 ---
 
 # PR preview media
 
 A reviewer reads the PR summary top to bottom and does not scroll into
-comments — the recordings belong in the body, in a `## Preview` section near
-the top. Everything runs on the host (gh, git, docker); nothing touches the
-repo's command boundary or the product code.
+comments — the recordings belong in the body. `gh` uploads them there
+directly; this skill is what gives it something true to upload. None of it
+touches application code.
 
-## 1. Fetch the artifact
+The source is a **passing verification run against a real stack**. Its
+assertions are what make a recording evidence rather than decoration: a video
+proves nothing on its own, and a screenshot of a screen nobody drove proves
+less. Drive and assert first. If the run failed, there is no Preview to
+publish — only a finding to report.
 
-Find the green run for the PR's head branch and pull the recordings:
+## Project bindings
 
-```bash
-gh run list --branch <branch> --workflow <workflow.yml> --json databaseId,conclusion,headSha
-gh run download <run-id> -n <artifact-name> -D <scratch>/e2e-artifact
-```
+- **Command boundary** — recording drives the browser, so it runs wherever the
+  browser driver lives (commonly inside the repo's container). `ffmpeg`, `git`
+  and `gh` run on the host. When the workspace is bind-mounted, a recording
+  written under the repo from inside is already on the host for conversion;
+  anything written to a container-only path is not.
+- **Recording source** — the verification run's artifacts, or a scripted
+  scenario driving the same flow.
 
-The run must be green and its `headSha` must match the PR head — stale
-recordings misrepresent the diff.
+## 1. Convert — match the medium to the claim
 
-Videos land one per spec under the browser config's `outputDir`. When the e2e
-command chains **several configs**, each has its own `outputDir` under a shared
-results root, because Playwright empties `outputDir` on start-up and they would
-otherwise erase each other. If a spec you expect is missing, check you are
-looking under the right config's subdirectory before assuming it did not run.
+Pick the form from what the scenario actually proves, one per surface:
 
-## 2. Convert
+- **MP4** when the proof is an interaction and the order matters — a selection
+  that routes somewhere, a signed-out action bouncing to login, a row leaving a
+  tab after approval.
+- **PNG** when a single frame carries it — an empty state, a rendered list, a
+  form showing which options it offers, an error banner. **Reach for this
+  first.** A reviewer reads a still instantly, and a video of a static screen
+  spends their attention for nothing.
 
-When ffmpeg is not on the host, use its image. Per spec dir, one GIF and one
-late-frame still — **two separate invocations**, since `-sseof` is an input
-option and cannot share a command with the GIF output:
-
-```bash
-docker run --rm -v "$PWD/<spec-dir>:/in" -v <scratch>/media:/out linuxserver/ffmpeg \
-  -y -i /in/video.webm -vf "fps=8,scale=640:-2:flags=lanczos" /out/<spec>.gif
-docker run --rm -v "$PWD/<spec-dir>:/in" -v <scratch>/media:/out linuxserver/ffmpeg \
-  -y -sseof -0.3 -i /in/video.webm -frames:v 1 -vf scale=800:-2 /out/<spec>.png
-```
-
-These settings keep each file in the tens of kilobytes. Eyeball one still
-(Read the png) before publishing — a blank frame means the seek landed outside
-the recording.
-
-## 3. Before / after, when the PR changes an existing surface
-
-A PR that reworks a screen, component or flow needs both states; a PR adding a
-genuinely new surface says "New surface — no before state" and skips this. The
-"before" must come from the **base branch**, never from cropping or re-staging
-the after shot — the point is showing what a user loses as well as what they
-gain.
-
-Take it from the base branch's own green artifact where one exists. If the base
-has no green run covering that spec, record it: check the base branch out in a
-scratch worktree, run only the relevant spec, and pull the video from its
-`outputDir`. Name the pair `<spec>-before.png` / `<spec>-after.png` and put
-both through the same still command so the two frames are the same width.
-
-## 4. Publish the media branch
-
-Media rides an orphan branch named `pr-<n>-media`, never merged:
+A before/after pair is two stills, whatever the surface does.
 
 ```bash
-git worktree add --orphan -b pr-<n>-media <scratch>/media-branch
-# copy media in, add a README naming the source run and "never merge"
-git commit --no-verify -m "chore: preview media for PR #<n>"
-git push origin pr-<n>-media && git worktree remove <scratch>/media-branch
+# Interaction -> MP4. yuv420p and +faststart make it play inline on GitHub;
+# libx264 refuses odd dimensions, so round both down to even.
+ffmpeg -y -i <in>.webm -an -c:v libx264 -pix_fmt yuv420p -movflags +faststart \
+  -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" <out>.mp4
+
+# State -> a late frame. `-sseof` is an input option, so it needs its own run.
+ffmpeg -y -sseof -0.3 -i <in>.webm -frames:v 1 -vf scale=800:-2 <out>.png
 ```
 
-`--no-verify` is deliberate: this is a media-only orphan branch, and the repo's
-pre-commit hooks generally expect the toolchain that a media branch has no
-reason to stand up.
+A `page.screenshot()` taken inline by the scenario is a better still than a
+seeked frame: it is the moment the assertion passed, not whatever the
+recording ended on.
 
-## 5. Embed in the PR body
+**Read every png before publishing.** A blank frame means the seek landed
+outside the recording — and two stills with the same hash mean the second
+proves nothing the first did not. That is not always a bug: two routes that
+render the same empty state produce honest identical frames, and a video is
+the wrong medium for that claim. Check before publishing two of them as if
+they showed different things:
 
-Edit the body with `gh pr edit <n> --body-file` — a comment is the wrong place.
-The `## Preview` section carries: one `###` per feature state with its GIF, the
-before/after table when step 3 applies, a `<details>` block with the stills, a
-link to the CI run's artifact for full-res `.webm`, and the cleanup note
-("media served from the never-to-be-merged `pr-<n>-media` branch; delete it
-once this PR closes"). When `.github/PULL_REQUEST_TEMPLATE.md` already lays out
-that shape, fill its placeholders rather than inventing a new one.
+```bash
+shasum <a>.png <b>.png
+```
 
-Image URLs MUST use the same-repo form
-`https://github.com/<owner>/<repo>/raw/pr-<n>-media/<file>.gif`. On a private
-repo `raw.githubusercontent.com` 404s for GitHub's image proxy and every image
-renders blank; the `github.com/…/raw/…` form is rewritten into per-viewer
-signed URLs and works for both visibilities.
+## 2. Before / after, for every surface that already existed
 
-Done when the PR body renders every image (spot-check the rendered page, not
-just the markdown) and the section sits above the change description.
+Only a surface this PR **introduces** is exempt, and one PR often has both
+kinds: a new screen plus one control dropped into an existing sheet is one
+greenfield surface and one changed surface — the changed one still owes a
+before.
+
+The before comes from the **base branch**, never from cropping or re-staging
+the after shot. Check the base out in a scratch worktree, bring the stack up
+against it, and run the same scenario:
+
+```bash
+git worktree add <scratch>/base-shot <base-branch>
+# launch + drive there, then take the still through the same command
+git worktree remove <scratch>/base-shot
+```
+
+Name the pair `<name>-before.png` / `<name>-after.png` and put both through
+the identical still command, so the two frames are the same width — a
+reviewer comparing two differently-scaled screenshots reads the scaling as a
+change.
+
+## 3. Attach into the PR body
+
+`gh pr edit --attach` uploads a local file and rewrites the body's reference
+to point at the uploaded asset, so the media lives in GitHub's own attachment
+store. No media branch, no raw URLs, nothing to clean up when the PR closes.
+
+**Requires `gh` 2.99.0 or newer.** Check first; on anything older, or on
+GitHub Enterprise Server, the flag does not exist and
+[`media-branch-fallback.md`](media-branch-fallback.md) is the path.
+
+```bash
+gh --version
+```
+
+Reference each file by its **local path** in the body markdown, then attach
+it. Run `gh` **from the directory holding the media** so `./name.mp4`
+resolves:
+
+```bash
+# body contains:  ![checkout flow](./checkout.mp4) and ![events](./events.png)
+gh pr edit <n> --body-file <body.md> \
+  --attach './checkout.mp4' \
+  --attach './events.png#Events list rendering three published events'
+```
+
+- Alt text follows the path after `#`. Without it the filename is used.
+- **Video takes no alt text** — `--attach './flow.mp4#…'` fails. Write the
+  markdown reference `![what it shows](./flow.mp4)` anyway; gh replaces the
+  whole reference with a player.
+- An attachment the body does not reference is appended to the end instead.
+- PNG, JPEG, GIF, WebP, SVG, MP4, MOV and WebM upload. Images cap at 10 MB.
+- `--attach` repeats once per file, up to 50 per command.
+- Without a body flag, the PR keeps the body it has and attachments are
+  appended.
+- On a partial failure the PR is still updated with what succeeded, and the
+  command exits non-zero — so check the status, not just the printed URL.
+
+## 4. Verify what rendered
+
+Confirm each asset resolves rather than trusting the markdown — an attach that
+failed still leaves a plausible-looking body:
+
+```bash
+gh pr view <n> --json body -q .body | grep -o 'https://github.com/user-attachments/assets/[^)]*' \
+  | while read -r u; do curl -sI "$u" | head -1; done
+```
+
+Expect `200` per asset. Done when every surface the diff touches carries the
+form its proof needs — MP4 for an interaction, a still for a state; every
+surface that already existed also has a before from the base branch at the
+same width; and every asset resolves in the rendered page.

@@ -37,7 +37,7 @@ reported, never guessed.
 | `resolve-pr-comment` | Reply on a thread, then resolve it |
 | `maintain-pr-description` | Rewrite the body so it describes HEAD, not the first submit |
 | `monitor-ci-and-reviews` | Watch checks and incoming review until they settle, then triage |
-| `pr-preview-media` | CI browser recordings → GIFs and stills embedded in the PR body |
+| `pr-preview-media` | Verification recordings → MP4s and stills uploaded into the PR body with `gh --attach` |
 
 **Environment**
 
