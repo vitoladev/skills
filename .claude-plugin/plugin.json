@@ -9,6 +9,7 @@
   },
   "repository": "https://github.com/vitoladev/skills",
   "homepage": "https://github.com/vitoladev/skills",
+  "license": "MIT",
   "keywords": [
     "orchestration",
     "stacked-prs",

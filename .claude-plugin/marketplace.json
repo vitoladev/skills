@@ -11,9 +11,17 @@
       "displayName": "Vitola Skills",
       "source": "./",
       "version": "0.1.0",
-      "description": "Ticket scoping, stacked-PR orchestration, backend/frontend verification, and PR upkeep — 11 skills and 4 agents, all project-agnostic.",
-      "author": { "name": "Victor" },
-      "keywords": ["orchestration", "stacked-prs", "verification", "devcontainer"]
+      "description": "Ticket scoping, stacked-PR orchestration, backend/frontend verification, and PR upkeep \u2014 11 skills and 4 agents, all project-agnostic.",
+      "author": {
+        "name": "Victor"
+      },
+      "keywords": [
+        "orchestration",
+        "stacked-prs",
+        "verification",
+        "devcontainer"
+      ],
+      "license": "MIT"
     }
   ]
 }
