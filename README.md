@@ -56,6 +56,21 @@ reported, never guessed.
 
 Or vendor it into a single project by copying `.agents/skills/` and `agents/`.
 
+**Any agent** — via the [`skills`](https://github.com/vercel-labs/skills)
+CLI, which needs no registry entry and discovers `.agents/skills/` directly:
+
+```bash
+npx skills add vitoladev/skills            # pick interactively
+npx skills add vitoladev/skills --all      # all 11 skills, all detected agents
+npx skills add vitoladev/skills --list     # just look
+```
+
+It symlinks into each detected agent's directory (`--copy` to copy instead)
+and supports 75+ agents. Note it installs **skills only** — the four agents
+in `agents/` do not come along, so `task-orchestrator` will not find its
+coordinator this way. Use the plugin, or copy `agents/` in by hand, if you
+want the orchestration set.
+
 **Codex** — clone or copy `.agents/skills/` into the repo (or
 `~/.agents/skills/` for personal scope). Codex reads that path natively; no
 manifest needed.
