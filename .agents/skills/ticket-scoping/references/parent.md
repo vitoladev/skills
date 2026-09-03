@@ -1,11 +1,11 @@
 # <title>
 
-> Parent issue. Sub-issues attach via Linear's native parent/child
-> relationship (`parentId`), not a task list.
+> Parent issue. Sub-issues attach via the tracker's native parent/child
+> relationship, not a task list.
 
 ## Context
 
-<!-- One paragraph: who does what with this feature and why it exists. Use CONTEXT.md vocabulary for every domain term — Facility, Carrier, Driver, Vehicle, Visit, gateInAt/gateOutAt, yardStay, Packet, domain event, projection. Do not invent a synonym. -->
+<!-- One paragraph: who does what with this feature and why it exists. Use the project glossary's vocabulary for every domain term — the exact entity, field, and event names the codebase already uses. Do not invent a synonym. -->
 
 ## High-level PRD
 
