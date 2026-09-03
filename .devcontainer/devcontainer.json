@@ -1,0 +1,11 @@
+{
+  "name": "vitola-skills",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "containerEnv": {
+    "GIT_COMMON_DIR": "${localEnv:GIT_COMMON_DIR}"
+  },
+  "mounts": [
+    "source=${localEnv:GIT_COMMON_DIR},target=${localEnv:GIT_COMMON_DIR},type=bind,consistency=cached"
+  ],
+  "remoteUser": "vscode"
+}
