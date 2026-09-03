@@ -122,7 +122,9 @@ gh pr edit <n> --body-file <body.md> \
   markdown reference `![what it shows](./flow.mp4)` anyway; gh replaces the
   whole reference with a player.
 - An attachment the body does not reference is appended to the end instead.
-- PNG, JPEG, GIF, WebP, SVG, MP4, MOV and WebM upload. Images cap at 10 MB.
+- PNG, JPEG, GIF, WebP, SVG, MP4, MOV and WebM upload; images cap at 10 MB,
+  video at 10 MB on Free and 100 MB on paid plans. GitHub Enterprise Server
+  does not serve this yet.
 - `--attach` repeats once per file, up to 50 per command.
 - Without a body flag, the PR keeps the body it has and attachments are
   appended.
@@ -131,15 +133,21 @@ gh pr edit <n> --body-file <body.md> \
 
 ## 4. Verify what rendered
 
-Confirm each asset resolves rather than trusting the markdown — an attach that
-failed still leaves a plausible-looking body:
+Confirm each asset resolves rather than trusting the markdown — a partial
+upload still rewrites the body. **On a private repo the assets are
+access-controlled and an anonymous fetch answers 404 for a perfectly good
+file**, so check as the viewer does, with credentials:
 
 ```bash
-gh pr view <n> --json body -q .body | grep -o 'https://github.com/user-attachments/assets/[^)]*' \
-  | while read -r u; do curl -sI "$u" | head -1; done
+gh pr view <n> --json body -q .body \
+  | grep -o 'https://github.com/user-attachments/assets/[^)[:space:]]*' \
+  | while read -r u; do
+      curl -s -o /dev/null -w "%{http_code} %{content_type} $u\n" -L \
+        -H "Authorization: token $(gh auth token)" "$u"
+    done
 ```
 
-Expect `200` per asset. Done when every surface the diff touches carries the
+Expect `200 image/png` or `200 video/mp4` per asset. Done when every surface the diff touches carries the
 form its proof needs — MP4 for an interaction, a still for a state; every
 surface that already existed also has a before from the base branch at the
 same width; and every asset resolves in the rendered page.

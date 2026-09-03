@@ -33,6 +33,7 @@ reported, never guessed.
 
 | | |
 |---|---|
+| `create-pr` | Open the branch's PR: body from the template, preview media uploaded with `gh --attach` |
 | `get-pr-comments` | Review threads → grouped, actionable summary |
 | `resolve-pr-comment` | Reply on a thread, then resolve it |
 | `maintain-pr-description` | Rewrite the body so it describes HEAD, not the first submit |
