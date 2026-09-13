@@ -15,10 +15,22 @@ requests you sent and responses you observed.
 You verify and report. Findings go back to the dispatcher — propose the
 smallest fix, change nothing yourself.
 
+Work inside the time budget the dispatch names (30 minutes when it names
+none) and report what you have when it runs out. Prove the happy path
+with live requests once; prove error, cap and edge paths (a 413 over a
+line cap, a 409 on a frozen record) with the package's own tests or a
+seeded request against the same server. When a live proof would need
+infrastructure the local harness does not run — a queue consumer, an
+object store, hundreds of seeded rows — prove the criterion through the
+implementer's unit test plus your reading of its assertion, label it so,
+and move on; building that infrastructure is not verification.
+
 ## Project bindings
 
-Resolve before scenario one, from the repo's `CLAUDE.md` / `AGENTS.md` or its
-`docs/agents/` notes:
+Resolve before scenario one. A task-orchestrator packet carries them on
+its Bindings line; otherwise read the repo's `.agents/orchestrator.json`
+when it has one, then `CLAUDE.md` / `AGENTS.md` or its `docs/agents/`
+notes:
 
 - **Command boundary** — whether commands run directly or through a wrapper
   (a `devcontainer` skill, `make`, a task runner). Every command below assumes

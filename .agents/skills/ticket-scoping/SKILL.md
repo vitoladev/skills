@@ -10,7 +10,7 @@ disable-model-invocation: true
 # Ticket scoping
 
 Turn a PRD/spec into one parent issue and its backend/frontend/contract/
-infra sub-issues, each shaped so `orchestration-coordinator`,
+infra sub-issues, each shaped so `task-orchestrator`,
 `backend-executor`, and `frontend-executor` can consume it without
 guessing: the parent carries the PRD and acceptance criteria those agents
 read as ground truth; each sub-issue's **Requirements** section is the
@@ -28,8 +28,9 @@ in: `references/parent.md`, `references/sub-issue-backend.md`,
 ## Project bindings
 
 This skill is project-agnostic; the repo supplies the specifics. Resolve
-these in step 1, from the repo's `CLAUDE.md` / `AGENTS.md`, its
-`docs/agents/` notes, or by asking:
+these in step 1 from the repo's `.agents/orchestrator.json` when it has one
+(`tracker`, `labels`), then `CLAUDE.md` / `AGENTS.md`, its `docs/agents/`
+notes, or by asking:
 
 - **Tracker** — how issues are created, updated, and linked parent-to-child
   (Linear MCP, `gh issue create` + sub-issues, Jira), and the identifier
@@ -49,6 +50,15 @@ these in step 1, from the repo's `CLAUDE.md` / `AGENTS.md`, its
 Bindings the repo doesn't have simply drop the matching label or template
 (a repo with no contract package files shape changes into its backend
 sub-issue). Say which you dropped in step 5.
+
+## 0. Restate the ask (when the input is noisy)
+
+If the input is a noisy thread, a vague prompt, or a multi-page PRD
+section, run `/restate` first when the repo has it (otherwise write the
+same five lines yourself: problem, symptom, in scope, out of scope, done
+means). Show it to the requester and correct the frame before step 1.
+Skip when the argument is already a crisp, single-feature spec with
+checkable outcomes.
 
 ## 1. Resolve the spec and target parent
 
@@ -122,6 +132,6 @@ user flow (frontend) — never a placeholder.
 The parent's identifier and title. Then each sub-issue: identifier, label,
 one-line surface. Note the stack order for reference — contract, then
 backend (with any infra), then frontend — matching how
-`orchestration-coordinator` will build it, and name any label you dropped
+`task-orchestrator` will build it, and name any label you dropped
 because the repo has no such seam. Close with the follow-up command:
 `/task-orchestrator <parent identifier>`.

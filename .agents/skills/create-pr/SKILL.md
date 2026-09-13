@@ -139,8 +139,42 @@ Then run the authenticated asset check from
 An attach that partly failed still rewrites the body, so the markdown looking
 right proves nothing.
 
+## 6. Ask for review, then watch
+
+Opening the PR is not the end of the layer. Read the repo's review-bot
+binding — `review_bot` in `.agents/orchestrator.json` (the
+`task-orchestrator` skill's `scripts/bindings.sh review_bot` prints the
+merged value), or the repo's `CLAUDE.md` when it has no overlay — and
+classify the layer:
+
+```bash
+base=$(gh pr view --json baseRefName -q .baseRefName)
+git diff --name-only "origin/$base"...HEAD
+```
+
+A layer is **docs-only** when every changed path ends in `.md`; otherwise
+it is **code**. When `review_bot` is null, nothing is posted. When its
+`trigger` is set and the layer's class is not in its `skip_on` list, post
+the trigger once:
+
+```bash
+gh pr comment <n> --body '<review_bot.trigger body>'
+```
+
+A null `trigger` means the bot reviews every PR on its own. Docs-only
+layers usually run the repo's writing gates instead (`/technical-writing`
+then `/unslop` when it has them), with prose fixes committed on the
+branch.
+
+Then run `/monitor-ci-and-reviews` on this PR (and every layer below it in
+a stack). That skill owns the watches, the triage loop, and when to call
+`/resolve-pr-comment`. "PR opened" is not green: a layer is merge-ready
+only when the required checks — and, for a layer the bot reviews, its
+verdict — pass on the current head.
+
 Done when the PR is open against the right base; every surface the diff
 touches appears in Preview, each changed one with both states and each
 greenfield one saying so; every asset answers 200 as an authenticated viewer;
-and a reviewer reading only the body would describe the same slice
-`git diff <base>...HEAD` shows.
+a reviewer reading only the body would describe the same slice
+`git diff <base>...HEAD` shows; and the review trigger, when the binding
+has one, is posted.
