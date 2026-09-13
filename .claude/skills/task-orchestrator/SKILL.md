@@ -36,7 +36,8 @@ Every slice passes the same gate before the next one starts: verified
 reviewed clean — zero P0/P1 from the standards review (step 4), run once
 over the slice diff against the repo's standards doc. Each of those runs
 **once per slice**; a fix round re-checks the finding it fixed, not the
-whole slice. Claude's built-in `code-review` skill is never used: its
+whole slice, and a slice gets at most `gate.max_fix_rounds` of them (3 by
+default) before it is blocked. Claude's built-in `code-review` skill is never used: its
 multi-angle passes burn the session for no gain here.
 
 ## Bindings and paths
@@ -62,6 +63,7 @@ uses:
 | `labels` | the sub-issue label for each concern; a concern set to `null` in the overlay is not scoped in this repo |
 | `review_bot` | `null` for CI-only, or `{trigger, author, check, verdict, skip_on}` |
 | `optional.promote-e2e`, `optional.pr-preview-media`, `optional.pr_template` | stages that run only when the repo has them |
+| `gate.max_fix_rounds` (top-level, not under `bindings`) | fix rounds a slice may spend before it is blocked; default 3 |
 
 Issue identifiers in this file are written `ABC-12` / `ABC-13`; read them
 as whatever `tracker.id_pattern` matches in the consuming repo.
@@ -451,9 +453,15 @@ narrow loop aimed at the finding, not a second pass over the slice:
    Sub-gates 1 and 3 do **not** re-run for a fix that stays inside the
    finding's files; they re-run only when the fix touched files outside
    them, or a lower slice was rebased under this one.
-3. **At most one fix round per slice**: `not-resolved` or `introduced-new`
-   marks the slice blocked; stop the run and report the standing findings
-   instead of looping.
+3. **At most `gate.max_fix_rounds` rounds per slice** (3 by default, from
+   `routing.json` merged with the repo overlay). A round is one fix
+   dispatch, its commit, and its fix-check. `not-resolved` or
+   `introduced-new` with rounds left starts the next round with the
+   fix-checker's verdict added to the packet; a fresh P0/P1 from a re-run
+   verify or review counts the same way. Past the cap the `done`
+   transition marks the slice `blocked`: stop the run and report the
+   standing findings instead of looping. No PR is opened for a slice that
+   is still blocked.
 4. A fix to an already-gated **lower** slice goes to that slice's branch
    (`gh stack checkout <branch>`, fix, commit, `gh stack rebase
    --upstack`); each slice above it re-runs its focused checks and tests,
@@ -531,5 +539,5 @@ $ORCH/checkpoint.sh stop ABC-12 --reason "<why>" --hint "<what a resume picks up
 ```
 
 A run stops early on a session limit, an interrupt, a slice still ungated
-after its one fix round, or a cloud session that ends with verify
+after its fix rounds are spent, or a cloud session that ends with verify
 deferred. The stop lands in the timeline too.

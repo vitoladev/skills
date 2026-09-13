@@ -71,7 +71,7 @@
             "fix-check": { "$ref": "#/$defs/phase_record" }
           }
         },
-        "fix_rounds": { "type": "integer", "minimum": 0, "maximum": 1 },
+        "fix_rounds": { "type": "integer", "minimum": 0 },
         "commits": { "type": "array", "items": { "type": "string" } },
         "pr": { "type": ["object", "null"], "properties": { "number": { "type": "integer" }, "url": { "type": "string" } } },
         "proven": { "type": "array", "items": { "type": "object", "required": ["criterion", "evidence", "level"], "properties": { "criterion": { "type": "string" }, "evidence": { "type": "string" }, "level": { "enum": ["test", "spec", "live-once"] }, "invalidated_by": { "type": "array", "items": { "type": "string" } } } } },

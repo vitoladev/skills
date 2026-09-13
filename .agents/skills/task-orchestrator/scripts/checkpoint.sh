@@ -19,7 +19,8 @@
 # Slice phases and where they lead (`next`): implement → verify → commit →
 # review → publish. A verify or review that leaves P0/P1 findings routes to
 # fix → commit → fix-check, then back to review (verify findings) or straight
-# to gated (review findings). At most one fix round per slice.
+# to gated (review findings). Up to routing.json gate.max_fix_rounds fix
+# rounds per slice (3 by default); the next open finding past that blocks it.
 set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
@@ -97,7 +98,8 @@ case "$cmd" in
       branch="$(jq -r --arg s "$s" '.slices[] | select(.id==$s) | .branch' <<<"$state")"; [ -n "$branch" ] || die "slice $s not in checkpoint"
       head="$(git_sha "$branch")"
       base_sha="$(git_sha "$(jq -r --arg s "$s" '.slices[] | select(.id==$s) | .base_branch' <<<"$state")")"
-      state="$(jq --arg s "$s" --arg base_sha "$base_sha" --arg p "$phase" --arg st "$status" --arg now "$(now)" --arg head "$head" \
+      max_fix="$(jq -r '.gate.max_fix_rounds // 3' "$ROUTING")"
+      state="$(jq --arg s "$s" --arg base_sha "$base_sha" --arg p "$phase" --arg st "$status" --arg now "$(now)" --arg head "$head" --argjson max_fix "$max_fix" \
         --arg agent "${OPT_agent:-}" --arg model "${OPT_model:-}" --arg attempt "${OPT_attempt:-}" --arg note "${OPT_note:-}" \
         --arg envpath "${OPT_envelope:-}" --argjson env "$env_json" "
         def phase_rec: (.phases[\$p] // $empty_phase);
@@ -135,11 +137,11 @@ case "$cmd" in
               (if \$p==\"verify\" then .status=\"implemented\" | .next=\"commit\" else . end)
             else # done
               if \$p==\"implement\" then .status=\"implemented\" | .next=\"verify\"
-              elif \$p==\"verify\" then (if \$open>0 then (if .fix_rounds==0 then .status=\"implemented\" | .next=\"fix\" else .status=\"blocked\" | .next=\"fix\" end) else .status=\"verified\" | .next=\"commit\" end)
+              elif \$p==\"verify\" then (if \$open>0 then (if .fix_rounds<\$max_fix then .status=\"implemented\" | .next=\"fix\" else .status=\"blocked\" | .next=\"fix\" end) else .status=\"verified\" | .next=\"commit\" end)
               elif \$p==\"fix\" then .status=\"implemented\" | .next=\"commit\"
               elif \$p==\"commit\" then .status=\"committed\" | .next=(if .fix_rounds>0 and \$open>0 then \"fix-check\" else \"review\" end)
-              elif \$p==\"review\" then (if \$open>0 or \$env.verdict==\"fail\" then (if .fix_rounds==0 then .status=\"committed\" | .next=\"fix\" else .status=\"blocked\" | .next=\"fix\" end) else .status=\"gated\" | .next=\"publish\" end)
-              elif \$p==\"fix-check\" then (if \$env.verdict==\"resolved\" then (if .phases.review.status==\"done\" then .status=\"gated\" | .next=\"publish\" else .status=\"committed\" | .next=\"review\" end) else .status=\"blocked\" | .next=\"fix\" end)
+              elif \$p==\"review\" then (if \$open>0 or \$env.verdict==\"fail\" then (if .fix_rounds<\$max_fix then .status=\"committed\" | .next=\"fix\" else .status=\"blocked\" | .next=\"fix\" end) else .status=\"gated\" | .next=\"publish\" end)
+              elif \$p==\"fix-check\" then (if \$env.verdict==\"resolved\" then (if .phases.review.status==\"done\" then .status=\"gated\" | .next=\"publish\" else .status=\"committed\" | .next=\"review\" end) elif .fix_rounds<\$max_fix then .status=\"committed\" | .next=\"fix\" else .status=\"blocked\" | .next=\"fix\" end)
               elif \$p==\"publish\" then .status=\"published\" | .next=null
               else . end
             end

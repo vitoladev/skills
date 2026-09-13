@@ -138,6 +138,10 @@ path ends in `.md`).
 A concern the repo does not scope is dropped by setting its label to
 `null` (`"labels": { "contract": null }`).
 
+The gate's one tunable sits beside the bindings: `"gate": { "max_fix_rounds": 3 }`
+— how many fix → commit → fix-check rounds a slice may spend on P0/P1
+findings before it is blocked and the run stops without opening its PR.
+
 `task-orchestrator/scripts/bindings.sh` prints the merged result;
 `bindings.sh --check` names what is still unresolved.
 

@@ -22,6 +22,10 @@
     "sandbox": { "sync": true,  "phases": { "scope": "run", "implement": "run", "fix": "run", "verify": "defer", "commit": "no", "fix-check": "no", "review": "run", "publish": "no" },
                  "why": "the worktree is a copy and git runs on the host, so nothing past review can happen here; download the copy and resume locally" }
   },
+  "gate": {
+    "$comment": "How many fix rounds a slice may spend before it is blocked and the run stops. A round is one fix dispatch + commit + fix-check. The cap counts rounds, not findings: one round may fix several. Override in the repo overlay.",
+    "max_fix_rounds": 3
+  },
   "envelope": {
     "max_nudges": 2,
     "nudge": "Your envelope at {path} is {problem}. Write the complete envelope now as JSON to that exact path — every required field for phase {phase}, ending with \"complete\": true — then stop. Do not redo or extend the work; report only what you already did."

@@ -1,7 +1,7 @@
 {
   "name": "vitola-skills",
   "displayName": "Vitola Skills",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Project-agnostic skills and agents for scoping tickets, driving a stacked-PR feature to done, verifying it in a real browser and API, and maintaining the PRs afterwards.",
   "author": {
     "name": "Victor",

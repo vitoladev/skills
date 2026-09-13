@@ -110,7 +110,7 @@ result="$(jq --argjson obs "$observed" --arg trunk_now "$trunk_now" --arg now "$
       elif .phases.verify.status != "done" then "verify"
       elif $open > 0 and (.phases.fix.status // "pending") != "done" then "fix"
       elif .phases.commit.status != "done" then "commit"
-      elif $open > 0 and .fix_rounds > 0 and (.phases["fix-check"].status // "pending") != "done" then "fix-check"
+      elif $open > 0 and .fix_rounds > 0 and ((.phases["fix-check"].status // "pending") != "done" or (.phases["fix-check"].attempt // 0) < .fix_rounds) then "fix-check"
       elif .phases.review.status != "done" then "review"
       elif .phases.publish.status != "done" then "publish"
       else null end;

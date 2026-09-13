@@ -216,4 +216,31 @@ unset ORCH_ENV
 
 echo "== render"
 "$cp" render "$T" | head -12
-echo; echo "$pass assertions passed"
+echo; 
+echo "== fix-round cap: a third slice burns gate.max_fix_rounds and blocks"
+S3="ABC-903"; B3="abc-903-fake-cap"
+cd "$ORCH_ROOT"; git checkout -q "$B1"; git checkout -qb "$B3"
+"$cp" slice add "$T" "$S3" --label backend --branch "$B3" --title "cap" >/dev/null
+"$cp" phase "$T" "$S3" implement running --agent backend-executor --model opus >/dev/null
+echo 'cap' > cap.go
+f="$(write_env "$S3" implement 1 backend-executor '{files_changed:["cap.go"],unsatisfied:[],deviations:[]}')"; "$cp" phase "$T" "$S3" implement done --envelope "$f" >/dev/null
+"$cp" phase "$T" "$S3" verify running --agent backend-verifier --model sonnet >/dev/null
+f="$(write_env "$S3" verify 1 backend-verifier '{criteria:[{criterion:"c",verdict:"failed",evidence:"nope",level:"spec",invalidated_by:["cap.go"]}],findings:[]}')"; "$cp" phase "$T" "$S3" verify done --envelope "$f" >/dev/null
+max_fix="$("$here/bindings.sh" | jq -r .gate.max_fix_rounds)"
+expect "default cap is 3" "$max_fix" 3
+for r in 1 2 3; do
+  expect "round $r: still allowed => next fix" "$(get '.slices[2] | "\(.status) \(.next)"')" "$([ $r -eq 1 ] && echo implemented || echo committed) fix"
+  "$cp" phase "$T" "$S3" fix running --agent backend-executor --model opus >/dev/null
+  expect "round $r counted" "$(get '.slices[2].fix_rounds')" "$r"
+  echo "cap$r" > cap.go
+  f="$(write_env "$S3" fix "$r" backend-executor '{files_changed:["cap.go"],unsatisfied:[],deviations:[]}')"; "$cp" phase "$T" "$S3" fix done --envelope "$f" >/dev/null
+  "$cp" phase "$T" "$S3" commit running --agent committer --model haiku >/dev/null
+  git add cap.go; git commit -qm "fix(api): cap round $r"
+  f="$(write_env "$S3" commit "$r" committer "{commits:[\"$(git rev-parse HEAD)\"]}")"; "$cp" phase "$T" "$S3" commit done --envelope "$f" >/dev/null
+  "$cp" phase "$T" "$S3" fix-check running --agent fix-checker --model haiku >/dev/null
+  f="$(write_env "$S3" fix-check "$r" fix-checker '{verdict:"not-resolved",findings:[]}')"; "$cp" phase "$T" "$S3" fix-check done --envelope "$f" >/dev/null
+done
+expect "after the cap: blocked" "$(get '.slices[2].status')" blocked
+expect "after the cap: next stays fix for a human" "$(get '.slices[2].next')" fix
+
+echo "$pass assertions passed"
