@@ -169,8 +169,11 @@ branch.
 Then run `/monitor-ci-and-reviews` on this PR (and every layer below it in
 a stack). That skill owns the watches, the triage loop, and when to call
 `/resolve-pr-comment`. "PR opened" is not green: a layer is merge-ready
-only when the required checks — and, for a layer the bot reviews, its
-verdict — pass on the current head.
+only when the required checks pass on the current head and, for a layer
+the bot reviews, the layer is review-clean: `verdict` set → that check
+passes on the current head; `verdict` null → the latest review by
+`author` is on the current head and no thread `author` opened is
+unresolved.
 
 Done when the PR is open against the right base; every surface the diff
 touches appears in Preview, each changed one with both states and each

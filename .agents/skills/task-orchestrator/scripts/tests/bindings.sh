@@ -15,23 +15,23 @@ if out="$(ORCH_ROOT="$T" "$B" --check 2>&1)"; then bad "no overlay should fail";
   for k in tracker.kind tracker.id_pattern standards_doc command.wrapper; do
     grep -q "unresolved required binding: $k" <<<"$out" && ok "reports $k" || bad "missing report for $k"; done; fi
 
-# preset by name expands, defaults survive under the merge
+# a full review_bot object passes through; defaults survive under the merge
 cat > "$T/a.json" <<'EOF'
-{"bindings":{"tracker":{"kind":"linear","team":"VIT","id_pattern":"^VIT-\\d+$"},"standards_doc":"docs/CODING_STANDARDS.md","command":{"wrapper":"scripts/devcontainer/exec.sh"},"review_bot":"pullfrog"}}
+{"bindings":{"tracker":{"kind":"linear","team":"ABC","id_pattern":"^ABC-\\d+$"},"standards_doc":"docs/STANDARDS.md","command":{"wrapper":"scripts/exec.sh"},"review_bot":{"trigger":"gh pr comment $PR --body '@bot review'","author":"bot[bot]","check":"bot","verdict":"bot-approval","skip_on":["docs-only"]}}}
 EOF
-ORCH_OVERLAY="$T/a.json" "$B" --check >/dev/null && ok "preset overlay resolves" || bad "preset overlay should resolve"
-expect "preset expands author" pullfrog "$(ORCH_OVERLAY="$T/a.json" "$B" review_bot.author | jq -r .)"
-expect "preset expands verdict" pullfrog-approval "$(ORCH_OVERLAY="$T/a.json" "$B" review_bot.verdict | jq -r .)"
+ORCH_OVERLAY="$T/a.json" "$B" --check >/dev/null && ok "bot overlay resolves" || bad "bot overlay should resolve"
+expect "bot author kept" 'bot[bot]' "$(ORCH_OVERLAY="$T/a.json" "$B" review_bot.author | jq -r .)"
+expect "bot verdict kept" bot-approval "$(ORCH_OVERLAY="$T/a.json" "$B" review_bot.verdict | jq -r .)"
 expect "default host_only kept" '["git","gh"]' "$(ORCH_OVERLAY="$T/a.json" "$B" command.host_only)"
 expect "default state_dir kept" docs/ai/executions "$(ORCH_OVERLAY="$T/a.json" "$B" state_dir | jq -r .)"
 
-# preset object with overrides; arrays replace; nested objects merge
+# a minimal review_bot (author only) gets the shape's defaults; arrays replace; nested objects merge
 cat > "$T/b.json" <<'EOF'
-{"bindings":{"tracker":{"kind":"github","id_pattern":"^#\\d+$"},"standards_doc":"CONTRIBUTING.md","command":{"wrapper":"direct","host_only":["git"]},"review_bot":{"preset":"codex","verdict":"codex-approved"},"labels":{"contract":"backend"}}}
+{"bindings":{"tracker":{"kind":"github","id_pattern":"^#\\d+$"},"standards_doc":"CONTRIBUTING.md","command":{"wrapper":"direct","host_only":["git"]},"review_bot":{"author":"reviewer[bot]"},"labels":{"contract":"backend"}}}
 EOF
-expect "preset override wins" codex-approved "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.verdict | jq -r .)"
-expect "preset base kept" 'chatgpt-codex-connector[bot]' "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.author | jq -r .)"
-expect "preset key dropped" null "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.preset)"
+expect "minimal bot: trigger defaults null" null "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.trigger)"
+expect "minimal bot: verdict defaults null" null "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.verdict)"
+expect "minimal bot: skip_on defaults" '["docs-only"]' "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.skip_on)"
 expect "array replaces" '["git"]' "$(ORCH_OVERLAY="$T/b.json" "$B" command.host_only)"
 expect "object merges" '{"backend":"backend","frontend":"frontend","contract":"backend","infra":"infra"}' "$(ORCH_OVERLAY="$T/b.json" "$B" labels)"
 
@@ -44,10 +44,13 @@ echo '{"bindings":{"tracker":{"kind":"x","id_pattern":"y"},"standards_doc":"z","
 ORCH_OVERLAY="$T/c.json" "$B" --check >/dev/null && ok "null review_bot resolves" || bad "null review_bot should resolve"
 expect "null review_bot stays null" null "$(ORCH_OVERLAY="$T/c.json" "$B" review_bot)"
 
-# unknown preset is an error
-echo '{"bindings":{"review_bot":"nope"}}' > "$T/d.json"
-if ORCH_OVERLAY="$T/d.json" "$B" >/dev/null 2>"$T/err"; then bad "unknown preset should fail"; else
-  grep -q "unknown review_bot preset nope" "$T/err" && ok "unknown preset named" || bad "unknown preset message"; fi
+# a bot name as a string, or an object without author, is an error
+echo '{"bindings":{"review_bot":"somebot"}}' > "$T/d.json"
+if ORCH_OVERLAY="$T/d.json" "$B" >/dev/null 2>"$T/err"; then bad "string review_bot should fail"; else
+  grep -q "review_bot must be null or an object" "$T/err" && ok "string review_bot rejected" || bad "string review_bot message"; fi
+echo '{"bindings":{"review_bot":{"trigger":"x"}}}' > "$T/d2.json"
+if ORCH_OVERLAY="$T/d2.json" "$B" >/dev/null 2>"$T/err"; then bad "authorless review_bot should fail"; else
+  grep -q "review_bot.author is required" "$T/err" && ok "authorless review_bot rejected" || bad "authorless review_bot message"; fi
 
 # invalid overlay JSON is an error, not silently ignored
 echo '{nope' > "$T/e.json"

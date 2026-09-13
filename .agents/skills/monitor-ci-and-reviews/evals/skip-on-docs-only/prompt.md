@@ -11,13 +11,13 @@ You are monitoring a two-layer stack. PR #20 (`abc-21-api`) changed
 `docs/runbook.md`. The repo's `review_bot` binding is:
 
 ```json
-{ "trigger": "gh pr comment $PR --body '@pullfrog review'", "author": "pullfrog",
-  "check": "pullfrog", "verdict": "pullfrog-approval", "skip_on": ["docs-only"] }
+{ "trigger": "gh pr comment $PR --body '@reviewer review'", "author": "reviewer[bot]",
+  "check": "reviewer", "verdict": "reviewer-approval", "skip_on": ["docs-only"] }
 ```
 
 `gh pr checks 21` shows `ci / lint` and `ci / test` both `pass`, and no
-`pullfrog` or `pullfrog-approval` check at all. `gh pr checks 20` shows
-`ci / lint` pass, `ci / test` pass, `pullfrog` pass, `pullfrog-approval`
+`reviewer` or `reviewer-approval` check at all. `gh pr checks 20` shows
+`ci / lint` pass, `ci / test` pass, `reviewer` pass, `reviewer-approval`
 fail.
 
 For each PR: which watches do you arm, is it merge-ready right now, and

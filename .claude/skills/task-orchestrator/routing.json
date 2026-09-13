@@ -27,7 +27,7 @@
     "nudge": "Your envelope at {path} is {problem}. Write the complete envelope now as JSON to that exact path — every required field for phase {phase}, ending with \"complete\": true — then stop. Do not redo or extend the work; report only what you already did."
   },
   "bindings": {
-    "$comment": "What the repo must tell the orchestrator. `required` lists the keys that must be non-null after the overlay; a missing one is stop-and-report, never a guess. `review_bot` may be null (CI only) or a preset name from review_bot_presets, optionally with keys overridden. A label set to null in the overlay is dropped: that concern is not scoped in the repo.",
+    "$comment": "What the repo must tell the orchestrator. `required` lists the keys that must be non-null after the overlay; a missing one is stop-and-report, never a guess. `review_bot` is null (CI is the only gate) or an object {trigger, author, check, verdict, skip_on}: `trigger` is the command that asks the bot to review, posted once per layer whose class is not in `skip_on` (null = the bot reviews on its own); `author` is the GitHub login its reviews and threads carry; `check` is a status check that says the reviewer ran (optional); `verdict` is a check that must pass on HEAD (null = the latest review by `author` is on HEAD with no unresolved thread it opened). Whatever bot the repo uses, it is described here and never named in a skill. A label set to null in the overlay is dropped: that concern is not scoped in the repo.",
     "required": ["tracker.kind", "tracker.id_pattern", "standards_doc", "command.wrapper"],
     "tracker":       { "kind": null, "team": null, "id_pattern": null, "docs": null },
     "standards_doc": null,
@@ -36,12 +36,5 @@
     "labels":        { "backend": "backend", "frontend": "frontend", "contract": "contract", "infra": "infra" },
     "review_bot":    null,
     "optional":      { "promote-e2e": true, "pr-preview-media": true, "pr_template": ".github/pull_request_template.md" }
-  },
-  "review_bot_presets": {
-    "$comment": "`trigger` is posted once per code layer (null = the bot reviews on its own); `author` is the login the review and its threads come from; `check` says the reviewer ran; `verdict` must pass on HEAD, or null = the latest review by `author` is on HEAD with no unresolved thread. Only `pullfrog` is verified against a live PR; the others carry status unverified until someone confirms the login.",
-    "pullfrog": { "trigger": "gh pr comment $PR --body '@pullfrog review'", "author": "pullfrog", "check": "pullfrog", "verdict": "pullfrog-approval", "skip_on": ["docs-only"], "status": "verified" },
-    "bugbot":   { "trigger": null, "author": "cursor[bot]", "check": null, "verdict": null, "skip_on": ["docs-only"], "status": "unverified" },
-    "codex":    { "trigger": "gh pr comment $PR --body '@codex review'", "author": "chatgpt-codex-connector[bot]", "check": null, "verdict": null, "skip_on": ["docs-only"], "status": "unverified" },
-    "claude":   { "trigger": "gh pr comment $PR --body '@claude review'", "author": "claude[bot]", "check": null, "verdict": null, "skip_on": ["docs-only"], "status": "unverified" }
   }
 }

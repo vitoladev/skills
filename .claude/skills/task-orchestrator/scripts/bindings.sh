@@ -4,10 +4,10 @@
 # Print the effective task-orchestrator config: routing.json (the plugin's
 # defaults, next to this script) with the consuming repo's
 # .agents/orchestrator.json merged over it. Objects merge key by key, arrays
-# and scalars in the overlay replace the default. A `review_bot` given as a
-# preset name expands to that preset; given as an object with `preset`, the
-# preset expands first and the object's other keys override it. A label set
-# to null in the overlay is dropped: that concern is not scoped in the repo.
+# and scalars in the overlay replace the default. `review_bot` is null or an
+# object {trigger, author, check, verdict, skip_on}; the repo describes its
+# bot, the plugin ships no named ones. A label set to null in the overlay is
+# dropped: that concern is not scoped in the repo.
 #
 #   bindings.sh                 # merged JSON on stdout
 #   bindings.sh review_bot      # one key (jq path, dots allowed)
@@ -32,13 +32,12 @@ if [ -f "$OVERLAY" ]; then
 fi
 
 merged="$(jq -c --argjson o "$overlay" '
-  (. * $o) as $root
-  | def preset($p): $root.review_bot_presets[$p] // error("unknown review_bot preset \($p)");
-  $root
+  (. * $o)
   | .bindings.review_bot |= (
-      if type == "string" then preset(.)
-      elif type == "object" and has("preset") then (preset(.preset) * (del(.preset)))
-      else . end)
+      if . == null then null
+      elif type != "object" then error("review_bot must be null or an object {trigger, author, check, verdict, skip_on}")
+      elif (.author // "") == "" then error("review_bot.author is required: the login the bot reviews and threads carry")
+      else ({trigger: null, check: null, verdict: null, skip_on: ["docs-only"]} + .) end)
   | .bindings.labels |= with_entries(select(.value != null))
   | walk(if type == "object" then del(.["$comment"]) else . end)' "$DEFAULTS")"
 

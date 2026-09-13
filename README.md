@@ -114,22 +114,26 @@ run with its name; it is never guessed.
 // .agents/orchestrator.json in the consuming repo
 {
   "bindings": {
-    "tracker":       { "kind": "linear", "team": "VIT", "id_pattern": "^VIT-\\d+$" },
+    "tracker":       { "kind": "linear", "team": "ABC", "id_pattern": "^ABC-\\d+$" },
     "standards_doc": "docs/CODING_STANDARDS.md",
     "command":       { "wrapper": "scripts/devcontainer/exec.sh" },
-    "review_bot":    "pullfrog"          // a preset name, an object, or null for CI-only
+    "review_bot": {                                   // or null: CI is the only gate
+      "trigger": "gh pr comment $PR --body '@reviewer review'",  // null: the bot reviews on its own
+      "author":  "reviewer[bot]",                     // login its reviews and threads carry
+      "check":   "reviewer",                          // "the reviewer ran" check; optional
+      "verdict": "reviewer-approval",                 // must pass on HEAD; null: see below
+      "skip_on": ["docs-only"]
+    }
   }
 }
 ```
 
-`review_bot` presets — `pullfrog`, `bugbot`, `codex`, `claude` — share one
-shape: `trigger` (comment to post, or null when the bot reviews on its own),
-`author` (the login its reviews and threads carry), `check` (the reviewer
-ran) and `verdict` (must pass on HEAD; null means "latest review by `author`
-is on HEAD with no unresolved thread"). Pass `{ "preset": "codex", "verdict":
-"codex-approved" }` to start from a preset and override. Only `pullfrog` is
-verified against a live PR today; the other logins are marked `unverified`
-in `routing.json` until someone confirms them.
+The review bot is described, never named: whichever bot a repo runs, the
+skills read this one shape. `author` is the only required key. With
+`verdict` null, review-clean means the latest review by `author` is on
+HEAD with no unresolved thread it opened. `skip_on` lists the layer
+classes the bot is never asked to review (`docs-only` = every changed
+path ends in `.md`).
 
 A concern the repo does not scope is dropped by setting its label to
 `null` (`"labels": { "contract": null }`).

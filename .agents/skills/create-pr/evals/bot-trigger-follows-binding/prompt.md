@@ -12,7 +12,7 @@ You have just opened PR #7 for branch `abc-13-shipments-api` against
 `.agents/orchestrator.json` resolves `review_bot` to:
 
 ```json
-{ "trigger": "gh pr comment $PR --body '@codex review'", "author": "chatgpt-codex-connector[bot]",
+{ "trigger": "gh pr comment $PR --body '@reviewer review'", "author": "reviewer[bot]",
   "check": null, "verdict": null, "skip_on": ["docs-only"] }
 ```
 

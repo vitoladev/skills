@@ -7,7 +7,7 @@ Load the `task-orchestrator` skill first (Skill tool); everything you need
 is in it. Do not search the filesystem. Assume the repo's
 `.agents/orchestrator.json` resolves every required binding (tracker
 `linear`, id pattern `^ABC-\d+$`, standards doc `docs/CODING_STANDARDS.md`,
-command wrapper `scripts/devcontainer/exec.sh`, review bot `pullfrog`).
+command wrapper `scripts/devcontainer/exec.sh`, review bot `{author: "reviewer[bot]", verdict: "reviewer-approval"}`).
 
 You are the task-orchestrator. A previous run of parent ticket ABC-900
 died on a session rate limit. Its checkpoint, `docs/ai/executions/ABC-900.json`,
