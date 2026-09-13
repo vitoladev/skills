@@ -59,7 +59,7 @@ uses:
 | `standards_doc` | the coding-standards file the review reads |
 | `state_dir` | where the run directory lives (default `docs/ai/executions`) |
 | `command.wrapper`, `command.host_only` | how toolchain commands run (`direct`, or a wrapper script); which commands stay on the host |
-| `labels` | the sub-issue label for each concern; a concern absent here is not scoped |
+| `labels` | the sub-issue label for each concern; a concern set to `null` in the overlay is not scoped in this repo |
 | `review_bot` | `null` for CI-only, or `{trigger, author, check, verdict, skip_on}` |
 | `optional.promote-e2e`, `optional.pr-preview-media`, `optional.pr_template` | stages that run only when the repo has them |
 

@@ -27,7 +27,7 @@
     "nudge": "Your envelope at {path} is {problem}. Write the complete envelope now as JSON to that exact path — every required field for phase {phase}, ending with \"complete\": true — then stop. Do not redo or extend the work; report only what you already did."
   },
   "bindings": {
-    "$comment": "What the repo must tell the orchestrator. `required` lists the keys that must be non-null after the overlay; a missing one is stop-and-report, never a guess. `review_bot` may be null (CI only) or a preset name from review_bot_presets, optionally with keys overridden.",
+    "$comment": "What the repo must tell the orchestrator. `required` lists the keys that must be non-null after the overlay; a missing one is stop-and-report, never a guess. `review_bot` may be null (CI only) or a preset name from review_bot_presets, optionally with keys overridden. A label set to null in the overlay is dropped: that concern is not scoped in the repo.",
     "required": ["tracker.kind", "tracker.id_pattern", "standards_doc", "command.wrapper"],
     "tracker":       { "kind": null, "team": null, "id_pattern": null, "docs": null },
     "standards_doc": null,

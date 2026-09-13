@@ -131,6 +131,9 @@ is on HEAD with no unresolved thread"). Pass `{ "preset": "codex", "verdict":
 verified against a live PR today; the other logins are marked `unverified`
 in `routing.json` until someone confirms them.
 
+A concern the repo does not scope is dropped by setting its label to
+`null` (`"labels": { "contract": null }`).
+
 `task-orchestrator/scripts/bindings.sh` prints the merged result;
 `bindings.sh --check` names what is still unresolved.
 

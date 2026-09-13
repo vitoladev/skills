@@ -35,6 +35,10 @@ expect "preset key dropped" null "$(ORCH_OVERLAY="$T/b.json" "$B" review_bot.pre
 expect "array replaces" '["git"]' "$(ORCH_OVERLAY="$T/b.json" "$B" command.host_only)"
 expect "object merges" '{"backend":"backend","frontend":"frontend","contract":"backend","infra":"infra"}' "$(ORCH_OVERLAY="$T/b.json" "$B" labels)"
 
+# a null label drops the concern; the others keep their defaults
+echo '{"bindings":{"tracker":{"kind":"x","id_pattern":"y"},"standards_doc":"z","command":{"wrapper":"w"},"labels":{"contract":null}}}' > "$T/l.json"
+expect "null label dropped" '{"backend":"backend","frontend":"frontend","infra":"infra"}' "$(ORCH_OVERLAY="$T/l.json" "$B" labels)"
+
 # review_bot null is CI-only, not unresolved
 echo '{"bindings":{"tracker":{"kind":"x","id_pattern":"y"},"standards_doc":"z","command":{"wrapper":"w"},"review_bot":null}}' > "$T/c.json"
 ORCH_OVERLAY="$T/c.json" "$B" --check >/dev/null && ok "null review_bot resolves" || bad "null review_bot should resolve"

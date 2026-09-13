@@ -6,7 +6,8 @@
 # .agents/orchestrator.json merged over it. Objects merge key by key, arrays
 # and scalars in the overlay replace the default. A `review_bot` given as a
 # preset name expands to that preset; given as an object with `preset`, the
-# preset expands first and the object's other keys override it.
+# preset expands first and the object's other keys override it. A label set
+# to null in the overlay is dropped: that concern is not scoped in the repo.
 #
 #   bindings.sh                 # merged JSON on stdout
 #   bindings.sh review_bot      # one key (jq path, dots allowed)
@@ -38,7 +39,8 @@ merged="$(jq -c --argjson o "$overlay" '
       if type == "string" then preset(.)
       elif type == "object" and has("preset") then (preset(.preset) * (del(.preset)))
       else . end)
-  | del(.["$comment"])' "$DEFAULTS")"
+  | .bindings.labels |= with_entries(select(.value != null))
+  | walk(if type == "object" then del(.["$comment"]) else . end)' "$DEFAULTS")"
 
 if $check; then
   missing="$(jq -r '
