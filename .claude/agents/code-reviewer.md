@@ -19,9 +19,9 @@ through. Read the sub-issue's Requirements from the tracker. Then review `git di
 
 ## Review on two axes
 
-- **Standards.** The packet names the standards doc. When it defines
-  partitions (a "Scoping a review" section or similar), read only the
-  partitions the diff touches; when it does not, read it whole. If you
+- **Standards.** The packet names the standards doc. When that doc
+  defines partitions (a "Scoping a review" section or similar), read only
+  the partitions the diff touches. When it does not, read it whole. If you
   leave a touched partition unexamined, report it as a finding so the
   orchestrator records the deviation.
 - **Spec.** Check every numbered requirement of the sub-issue: it is
@@ -51,7 +51,7 @@ tests, or docs, and you never commit. One review, one envelope.
 Your packet ends with an envelope footer that names a path under
 `<state_dir>/<ticket>/envelopes/`. Your last act is to write that JSON
 file. The footer names the required fields and the `validate.sh` command
-that checks them; `envelope.md` beside the task-orchestrator skill is the
+that checks them. `envelope.md` beside the task-orchestrator skill is the
 full contract. Take every value from a tool result you observed in this
 session. Write `"complete": true` as the final field. Then run the
 `validate.sh envelope <path>` command the footer gives and fix what it

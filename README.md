@@ -23,9 +23,9 @@ reported, never guessed.
 | `committer` *(agent)* | Owns the gate's commit step |
 | `fix-checker` *(agent)* | After a fix round, answers resolved / not-resolved / introduced-new for one finding |
 
-The orchestrator's runtime — checkpoint, envelope, resume, route, sync —
-lives in `task-orchestrator/scripts/` (bash + jq + git + gh on the host)
-with its own tests under `scripts/tests/`.
+The orchestrator's runtime (checkpoint, envelope, resume, route, sync)
+lives in `task-orchestrator/scripts/`. It needs bash, jq, git, and gh on
+the host, and its tests are under `scripts/tests/`.
 
 **Verification**
 
@@ -51,11 +51,11 @@ with its own tests under `scripts/tests/`.
 | | |
 |---|---|
 | `restate` | Compress a noisy ask into a five-line frame before scoping |
-| `investigate` | Grounded how/why of a subsystem from sources of truth, ADRs and code |
+| `investigate` | How and why a subsystem works, cited from sources of truth, ADRs, and code |
 | `coding-guidelines` | Simplicity-first, surgical-change rules the executors condense |
 | `tdd` | Red-green vertical slices (vendored from Matt Pocock) |
-| `technical-writing` | Diátaxis / developer-style gate for docs, PR bodies, skill markdown |
-| `unslop` | Strip AI tells from diffs, docs, PR prose |
+| `technical-writing` | Diátaxis and developer-style gate for docs, PR bodies, and skill markdown |
+| `unslop` | Strip AI tells from diffs, docs, and PR prose |
 | `show-me` | Pick a visual shape (table, tree, diff, mermaid) for a PR body or reply |
 | `gh-stack` | Stacked branches and PRs with the gh-stack extension |
 
@@ -86,10 +86,10 @@ npx skills add vitoladev/skills --list     # just look
 ```
 
 It symlinks into each detected agent's directory (`--copy` to copy instead)
-and supports 75+ agents. Note it installs **skills only** — the agents
-in `.agents/agents/` do not come along, so `task-orchestrator` will have
-nothing to dispatch this way. Use the plugin, the subtree, or copy
-`.claude/agents/` in by hand, if you want the orchestration set.
+and supports 75+ agents. It installs skills only. The agents in
+`.agents/agents/` do not come along, so `task-orchestrator` has nothing
+to dispatch this way. For the orchestration set, use the plugin, the
+subtree, or copy `.claude/agents/` in by hand.
 
 **Codex** — clone or copy `.agents/skills/` into the repo (or
 `~/.agents/skills/` for personal scope). Codex reads that path natively; no
@@ -103,12 +103,13 @@ constrain it there.
 
 ## Bindings
 
-Nothing here names a tracker, a standards doc, a command wrapper or a review
-bot. The orchestrator reads them from `routing.json` (the defaults, inside
-the `task-orchestrator` skill) with the consuming repo's
-`.agents/orchestrator.json` merged over it — objects merge, arrays and
-scalars replace. A required binding still `null` after the merge stops the
-run with its name; it is never guessed.
+Nothing here names a tracker, a standards doc, a command wrapper, or a
+review bot. The orchestrator reads them from `routing.json` (the defaults,
+inside the `task-orchestrator` skill) with the consuming repo's
+`.agents/orchestrator.json` merged over it. Objects merge key by key.
+Arrays and scalars in the overlay replace the default. A required binding
+that is still `null` after the merge stops the run with its name. The
+orchestrator never guesses one.
 
 ```jsonc
 // .agents/orchestrator.json in the consuming repo
@@ -128,19 +129,20 @@ run with its name; it is never guessed.
 }
 ```
 
-The review bot is described, never named: whichever bot a repo runs, the
-skills read this one shape. `author` is the only required key. With
-`verdict` null, review-clean means the latest review by `author` is on
-HEAD with no unresolved thread it opened. `skip_on` lists the layer
-classes the bot is never asked to review (`docs-only` = every changed
-path ends in `.md`).
+The repo describes its review bot; no skill names one. Whichever bot a
+repo runs, the skills read this one shape. `author` is the only required
+key. When `verdict` is null, a layer is review-clean when the latest
+review by `author` is on HEAD and no thread that `author` opened is
+unresolved. `skip_on` lists the layer classes the bot never reviews. A
+layer is `docs-only` when every changed path ends in `.md`.
 
-A concern the repo does not scope is dropped by setting its label to
-`null` (`"labels": { "contract": null }`).
+To drop a concern the repo does not scope, set its label to `null`
+(`"labels": { "contract": null }`).
 
-The gate's one tunable sits beside the bindings: `"gate": { "max_fix_rounds": 3 }`
-— how many fix → commit → fix-check rounds a slice may spend on P0/P1
-findings before it is blocked and the run stops without opening its PR.
+The gate has one setting, beside the bindings: `"gate": { "max_fix_rounds": 3 }`.
+It is the number of fix, commit, and fix-check rounds a slice may spend
+on P0 and P1 findings. Past it the slice is blocked and the run stops
+without opening that slice's PR.
 
 `task-orchestrator/scripts/bindings.sh` prints the merged result;
 `bindings.sh --check` names what is still unresolved.
@@ -148,23 +150,24 @@ findings before it is blocked and the run stops without opening its PR.
 ## Layout
 
 ```
-.agents/skills/         canonical skills, harness-neutral — Codex and `npx skills` read here
+.agents/skills/         canonical skills, harness-neutral; Codex and `npx skills` read here
 .agents/agents/         canonical agents, harness-neutral
 .agents/agent-manifest.json   per-harness agent frontmatter (tools, fallback model)
 .claude/skill-models.json     per-skill Claude Code frontmatter (model, fork)
-.claude/skills/         rendered from the canon — Claude Code and the plugin read here
-.claude/agents/         rendered from the canon — Claude Code, Cursor and Codex read here
-.cursor/agents/         rendered from the canon — Cursor
+.claude/skills/         rendered from the canon; Claude Code and the plugin read here
+.claude/agents/         rendered from the canon; Claude Code, Cursor, and Codex read here
+.cursor/agents/         rendered from the canon; Cursor reads here
 .claude-plugin/         plugin + marketplace manifests
 .githooks/              pre-commit: rendered copies match the canon, runtime tests pass
 scripts/skills/, scripts/agents/   the two render scripts (`--check` for CI)
 .devcontainer/, scripts/devcontainer/   reference devcontainer runtime, keyed per worktree
 ```
 
-The rendered directories are committed real files, not symlinks: a plugin
-install copies the tree and does not promise to keep links. Edit the canon
-and the manifests, run `scripts/skills/sync-claude-skills.sh` and
-`scripts/agents/sync-agents.sh`, commit both. `git config core.hooksPath
+The rendered directories are committed as real files, not symlinks,
+because a plugin install copies the tree and does not promise to keep
+links. To change a skill or agent, edit the canon and the manifests, run
+`scripts/skills/sync-claude-skills.sh` and `scripts/agents/sync-agents.sh`,
+and commit both. `git config core.hooksPath
 .githooks` once per clone makes pre-commit refuse a stale copy.
 
 Skills and agents diverge because the ecosystems did. Skills standardised on

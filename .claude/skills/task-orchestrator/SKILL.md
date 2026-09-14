@@ -36,37 +36,37 @@ Every slice passes the same gate before the next one starts: verified
 reviewed clean — zero P0/P1 from the standards review (step 4), run once
 over the slice diff against the repo's standards doc. Each of those runs
 **once per slice**; a fix round re-checks the finding it fixed, not the
-whole slice, and a slice gets at most `gate.max_fix_rounds` of them (3 by
-default) before it is blocked. Claude's built-in `code-review` skill is never used: its
-multi-angle passes burn the session for no gain here.
+whole slice. A slice gets at most `gate.max_fix_rounds` of them (3 by
+default) before it is blocked. Never use Claude's built-in `code-review`
+skill here: its multi-angle passes burn the session for no gain.
 
 ## Bindings and paths
 
 `$ORCH` below is the `scripts/` directory beside this file. Every script
-this playbook names lives there; call it as `$ORCH/<name>`. The scripts
-need bash, jq, git and gh on the host.
+this playbook names lives there. Call each one as `$ORCH/<name>`. The
+scripts need bash, jq, git, and gh on the host.
 
-This skill names no tracker, no standards doc, no command wrapper and no
-review bot. `routing.json` beside this file holds the defaults; the repo's
-`.agents/orchestrator.json` is merged over it. Before anything else, run
-`$ORCH/bindings.sh --check`. If it exits non-zero, stop and report the
-unresolved names to the user — never guess a binding, never read it from
-prose. `$ORCH/bindings.sh <key>` prints one value. The keys this playbook
-uses:
+This skill names no tracker, no standards doc, no command wrapper, and no
+review bot. `routing.json` beside this file holds the defaults, and the
+repo's `.agents/orchestrator.json` is merged over it. Before anything
+else, run `$ORCH/bindings.sh --check`. If it exits non-zero, stop and
+report the unresolved names to the user. Never guess a binding, and never
+read one from prose. `$ORCH/bindings.sh <key>` prints one value. The keys
+this playbook uses:
 
 | Key | Meaning |
 | --- | --- |
-| `tracker.kind`, `tracker.id_pattern`, `tracker.docs` | how issues are read (`linear`, `github`, `jira`), the identifier shape, an optional repo doc with the conventions |
+| `tracker.kind`, `tracker.id_pattern`, `tracker.docs` | how issues are read (`linear`, `github`, `jira`), the identifier shape, and an optional repo doc with the conventions |
 | `standards_doc` | the coding-standards file the review reads |
 | `state_dir` | where the run directory lives (default `docs/ai/executions`) |
-| `command.wrapper`, `command.host_only` | how toolchain commands run (`direct`, or a wrapper script); which commands stay on the host |
+| `command.wrapper`, `command.host_only` | how toolchain commands run (`direct`, or a wrapper script), and which commands stay on the host |
 | `labels` | the sub-issue label for each concern; a concern set to `null` in the overlay is not scoped in this repo |
-| `review_bot` | `null` for CI-only, or `{trigger, author, check, verdict, skip_on}` |
+| `review_bot` | `null` when CI is the only gate, or `{trigger, author, check, verdict, skip_on}` |
 | `optional.promote-e2e`, `optional.pr-preview-media`, `optional.pr_template` | stages that run only when the repo has them |
-| `gate.max_fix_rounds` (top-level, not under `bindings`) | fix rounds a slice may spend before it is blocked; default 3 |
+| `gate.max_fix_rounds` (top level, not under `bindings`) | the fix rounds a slice may spend before it is blocked (default 3) |
 
-Issue identifiers in this file are written `ABC-12` / `ABC-13`; read them
-as whatever `tracker.id_pattern` matches in the consuming repo.
+Issue identifiers in this file are written `ABC-12` and `ABC-13`. Read
+them as whatever `tracker.id_pattern` matches in the consuming repo.
 
 ## Two rules keep a run alive
 
@@ -93,7 +93,6 @@ that started it:
 
 - `$ORCH` holds the scripts.
 - One agent roster, rendered per harness by the plugin's sync scripts.
-  Agent names are the same in every rendering.
 - `routing.json` next to this file names the agent and model tier per
   phase, with one model table per harness.
 - The checkpoint records the harness that made the last write. A resume
@@ -179,16 +178,16 @@ pending, never forward to done.
 
 The argument names a parent issue: an identifier matching
 `tracker.id_pattern`, or an issue URL. Parent = feature PRD + acceptance
-criteria; sub-issue = requirements + implementation plan. Read, in order,
-through whatever `tracker.kind` names (the Linear MCP, `gh issue view` +
-`gh api graphql`, the Jira CLI; `tracker.docs` carries the repo's
-conventions when set):
+criteria; sub-issue = requirements + implementation plan. Read them
+through the tool `tracker.kind` names (the Linear MCP, `gh issue view`
+with `gh api graphql`, or the Jira CLI). `tracker.docs`, when set, is the
+repo's note on those conventions. Read, in order:
 
 1. The parent — PRD, scope, non-goals, acceptance criteria, and any
    dependency it names on an earlier parent (which must be merged first).
-2. Its sub-issues, via the tracker's native parent/child relationship (the
-   parent body's task list is the fallback) — each carrying one of the
-   labels in `labels`; read every body.
+2. Its sub-issues, through the tracker's own parent-to-child link (the
+   parent body's task list is the fallback). Each carries one of the
+   labels in `labels`. Read every body.
 3. The API contract, when the repo is contract-first (or the contract
    sub-issue if it does not exist yet).
 4. Domain-context docs the issues reference (a glossary, `CONTEXT.md`),
@@ -342,7 +341,7 @@ commit, review, fix, fix-check) ends with the same footer for its phase.
 
 Complete when each packet names its issue identifiers, the bindings line,
 in/out of scope, a checkable done-bar, and its envelope footer. Verify,
-review, commit and fix-check packets carry the same bindings line.
+review, commit, and fix-check packets carry the same bindings line.
 
 ## 3. Dispatch, one slice at a time
 
@@ -455,13 +454,15 @@ narrow loop aimed at the finding, not a second pass over the slice:
    them, or a lower slice was rebased under this one.
 3. **At most `gate.max_fix_rounds` rounds per slice** (3 by default, from
    `routing.json` merged with the repo overlay). A round is one fix
-   dispatch, its commit, and its fix-check. `not-resolved` or
-   `introduced-new` with rounds left starts the next round with the
-   fix-checker's verdict added to the packet; a fresh P0/P1 from a re-run
-   verify or review counts the same way. Past the cap the `done`
-   transition marks the slice `blocked`: stop the run and report the
-   standing findings instead of looping. No PR is opened for a slice that
-   is still blocked.
+   dispatch, its commit, and its fix-check. When rounds remain, a
+   `not-resolved` or `introduced-new` verdict starts the next round, with
+   the fix-checker's verdict added to the packet. A fresh P0 or P1 from a
+   re-run verify or review counts the same way. Past the cap, the `done`
+   transition marks the slice `blocked`. Stop the run and report the
+   standing findings instead of looping. A blocked slice is not gated, so
+   publish opens no PR for it. (A single criterion the verifier reported
+   Blocked for want of infrastructure is different: that slice still
+   gates and publishes, see step 5.)
 4. A fix to an already-gated **lower** slice goes to that slice's branch
    (`gh stack checkout <branch>`, fix, commit, `gh stack rebase
    --upstack`); each slice above it re-runs its focused checks and tests,
@@ -499,8 +500,8 @@ until every slice is gated.
    citing artifacts that don't exist.
 3. **Ask for review.** When `review_bot` is not null and its `trigger` is
    set, post the trigger on every layer whose class is not in
-   `review_bot.skip_on` (a layer is `docs-only` when every changed path
-   ends in `.md`). A null `trigger` means the bot reviews on its own; a
+   `review_bot.skip_on`. A layer is `docs-only` when every changed path
+   ends in `.md`. A null `trigger` means the bot reviews on its own. A
    null `review_bot` means CI is the only gate.
 4. Once the pushed frontend branch's CI run goes green and
    `optional.pr-preview-media` is set, invoke `pr-preview-media` so the
@@ -508,9 +509,9 @@ until every slice is gated.
 5. Mark each slice published:
    `checkpoint.sh phase ABC-12 ABC-13 publish done`.
 6. Arm `/monitor-ci-and-reviews` on the published stack (every opened
-   PR, bottom-up); it reads `review_bot` to know whose review to wait
-   for. Triage reds / bot review before handing off; do not invent an
-   ad-hoc `until gh` poll loop.
+   PR, bottom-up). It reads `review_bot` to know whose review to wait
+   for. Triage red checks and bot findings before handing off. Do not
+   invent an ad-hoc `until gh` poll loop.
 7. Merging is the user's decision (`gh stack merge`) — leave the stack
    open.
 

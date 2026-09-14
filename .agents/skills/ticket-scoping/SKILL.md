@@ -28,9 +28,9 @@ in: `references/parent.md`, `references/sub-issue-backend.md`,
 ## Project bindings
 
 This skill is project-agnostic; the repo supplies the specifics. Resolve
-these in step 1 from the repo's `.agents/orchestrator.json` when it has one
-(`tracker`, `labels`), then `CLAUDE.md` / `AGENTS.md`, its `docs/agents/`
-notes, or by asking:
+these in step 1 from the repo's `.agents/orchestrator.json` when it has
+one (`tracker`, `labels`), then `CLAUDE.md` or `AGENTS.md`, then its
+`docs/agents/` notes, or by asking:
 
 - **Tracker** — how issues are created, updated, and linked parent-to-child
   (Linear MCP, `gh issue create` + sub-issues, Jira), and the identifier
@@ -54,11 +54,11 @@ sub-issue). Say which you dropped in step 5.
 ## 0. Restate the ask (when the input is noisy)
 
 If the input is a noisy thread, a vague prompt, or a multi-page PRD
-section, run `/restate` first when the repo has it (otherwise write the
-same five lines yourself: problem, symptom, in scope, out of scope, done
-means). Show it to the requester and correct the frame before step 1.
-Skip when the argument is already a crisp, single-feature spec with
-checkable outcomes.
+section, run `/restate` first when the repo has it. Otherwise write the
+same five lines yourself: problem, symptom, in scope, out of scope, and
+done means. Show the restate to the requester and correct the frame
+before step 1. Skip this step when the argument is already a crisp,
+single-feature spec with checkable outcomes.
 
 ## 1. Resolve the spec and target parent
 

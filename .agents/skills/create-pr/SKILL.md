@@ -142,38 +142,38 @@ right proves nothing.
 ## 6. Ask for review, then watch
 
 Opening the PR is not the end of the layer. Read the repo's review-bot
-binding — `review_bot` in `.agents/orchestrator.json` (the
-`task-orchestrator` skill's `scripts/bindings.sh review_bot` prints the
-merged value), or the repo's `CLAUDE.md` when it has no overlay — and
-classify the layer:
+binding: `review_bot` in `.agents/orchestrator.json`, or the repo's
+`CLAUDE.md` when it has no overlay. The `task-orchestrator` skill's
+`scripts/bindings.sh review_bot` prints the merged value. Then classify
+the layer:
 
 ```bash
 base=$(gh pr view --json baseRefName -q .baseRefName)
 git diff --name-only "origin/$base"...HEAD
 ```
 
-A layer is **docs-only** when every changed path ends in `.md`; otherwise
-it is **code**. When `review_bot` is null, nothing is posted. When its
-`trigger` is set and the layer's class is not in its `skip_on` list, post
-the trigger once:
+A layer is docs-only when every changed path ends in `.md`. Otherwise it
+is code. When `review_bot` is null, post nothing. When its `trigger` is
+set and the layer's class is not in its `skip_on` list, post the trigger
+once:
 
 ```bash
 gh pr comment <n> --body '<review_bot.trigger body>'
 ```
 
-A null `trigger` means the bot reviews every PR on its own. Docs-only
-layers usually run the repo's writing gates instead (`/technical-writing`
-then `/unslop` when it has them), with prose fixes committed on the
+A null `trigger` means the bot reviews every PR on its own. On a
+docs-only layer, run the repo's writing gates instead (`/technical-writing`
+then `/unslop`, when it has them) and commit the prose fixes on the
 branch.
 
-Then run `/monitor-ci-and-reviews` on this PR (and every layer below it in
-a stack). That skill owns the watches, the triage loop, and when to call
-`/resolve-pr-comment`. "PR opened" is not green: a layer is merge-ready
-only when the required checks pass on the current head and, for a layer
-the bot reviews, the layer is review-clean: `verdict` set → that check
-passes on the current head; `verdict` null → the latest review by
-`author` is on the current head and no thread `author` opened is
-unresolved.
+Then run `/monitor-ci-and-reviews` on this PR and on every layer below it
+in a stack. That skill owns the watches, the triage loop, and when to call
+`/resolve-pr-comment`. An open PR is not a green PR. A layer is
+merge-ready only when the required checks pass on the current head and,
+for a layer the bot reviews, the layer is review-clean. When `verdict` is
+set, review-clean means that check passes on the current head. When
+`verdict` is null, it means the latest review by `author` is on the
+current head and no thread that `author` opened is unresolved.
 
 Done when the PR is open against the right base; every surface the diff
 touches appears in Preview, each changed one with both states and each

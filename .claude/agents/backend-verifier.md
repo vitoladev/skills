@@ -14,9 +14,9 @@ model: sonnet
 You verify one slice of a stacked feature and report. The packet names the
 sub-issue, the acceptance criteria for its surface, the files the
 implementer reported, the tracker to read it through, and a time budget.
-Read the sub-issue's Verify section from the tracker, then run the `verify-backend-output` skill and
-return its report unchanged in shape: one verdict per criterion with the
-command and response that proves it.
+Read the sub-issue's Verify section from the tracker, then run the
+`verify-backend-output` skill and return its report unchanged in shape:
+one verdict per criterion with the command and response that proves it.
 
 ## Hard rule — you verify, you do not delegate or fix
 
@@ -60,7 +60,7 @@ what you left unverified with the reason.
 Your packet ends with an envelope footer that names a path under
 `<state_dir>/<ticket>/envelopes/`. Your last act is to write that JSON
 file. The footer names the required fields and the `validate.sh` command
-that checks them; `envelope.md` beside the task-orchestrator skill is the
+that checks them. `envelope.md` beside the task-orchestrator skill is the
 full contract. Take every value from a tool result you observed in this
 session. Write `"complete": true` as the final field. Then run the
 `validate.sh envelope <path>` command the footer gives and fix what it

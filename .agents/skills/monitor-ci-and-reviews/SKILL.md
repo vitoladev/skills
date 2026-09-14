@@ -25,13 +25,14 @@ meaningless, so watch both. Read the whole stack's PR numbers out once, here.
 
 ## 1b. Know whose review to wait for
 
-Read the repo's `review_bot` binding — `.agents/orchestrator.json`
-(`scripts/bindings.sh review_bot` in the `task-orchestrator` skill prints
-the merged value), else the repo's `CLAUDE.md`. Null means CI is the only
-gate: arm §3 and skip §3b. Otherwise it names `author` (the login the
-bot's reviews and threads carry), `check` (a status check that says the
-reviewer ran), `verdict` (a check that must pass on the current head, or
-null), and `skip_on` (layer classes the bot never reviews).
+Read the repo's `review_bot` binding from `.agents/orchestrator.json`,
+or from the repo's `CLAUDE.md` when it has no overlay. The
+`task-orchestrator` skill's `scripts/bindings.sh review_bot` prints the
+merged value. When the binding is null, CI is the only gate: arm §3 and
+skip §3b. Otherwise it names `author` (the login the bot's reviews and
+threads carry), `check` (a status check that says the reviewer ran),
+`verdict` (a check that must pass on the current head, or null), and
+`skip_on` (the layer classes the bot never reviews).
 
 For each PR, classify the head against its base:
 
@@ -40,15 +41,16 @@ base=$(gh pr view <n> --json baseRefName -q .baseRefName)
 git diff --name-only "origin/$base"...$(gh pr view <n> --json headRefOid -q .headRefOid)
 ```
 
-A layer whose class (`docs-only` when every changed path ends in `.md`,
-else `code`) is in `skip_on` gets §3 only: merge-ready = required checks
-green, and a missing `check` / `verdict` is expected, not pending. Every
-other layer gets §3 and §3b, and merge-ready also needs the review-clean
-rule below.
+A layer is `docs-only` when every changed path ends in `.md`, else
+`code`. A layer whose class is in `skip_on` gets §3 only. It is
+merge-ready when the required checks are green, and a missing `check` or
+`verdict` is expected, not pending. Every other layer gets §3 and §3b,
+and merge-ready also needs the review-clean rule.
 
-**Review-clean**, one rule: when `verdict` is set, that check passes on
-the current head. When it is null, the latest review by `author` is on
-the current head and no thread opened by `author` is unresolved.
+A layer is review-clean under one rule. When `verdict` is set, that check
+passes on the current head. When `verdict` is null, the latest review by
+`author` is on the current head and no thread that `author` opened is
+unresolved.
 
 ## 2. Know what checks to expect
 
@@ -118,11 +120,11 @@ else in the session. Then keep working — the notification arrives on its own.
 
 ## 3b. Arm a review watch per reviewed PR
 
-Skip on layers §1b excluded. The bot's `check` going green only means the
-reviewer ran; the verdict is `verdict` (or the thread rule). One `Monitor`
-per PR turns each new review by `author` and each new unresolved thread
-it opened into an event, and exits once the reviewer has spoken on the
-current head:
+Skip the layers §1b excluded. The bot's `check` going green only means
+the reviewer ran. The verdict is the `verdict` check, or the thread rule
+when `verdict` is null. One `Monitor` per PR turns each new review by
+`author` and each new unresolved thread it opened into an event, and
+exits once the reviewer has spoken on the current head:
 
 ```bash
 n=<pr>; author=<review_bot.author>; head=$(gh pr view $n --json headRefOid --jq .headRefOid)
@@ -139,29 +141,29 @@ done
 echo "PR$n REVIEW WATCH TIMEOUT — no review by $author on ${head:0:7} after 45 minutes"
 ```
 
-The watch ends with a line either way — `REVIEWED` or `REVIEW WATCH
-TIMEOUT` — because a loop that only reports success is silent on exactly
-the failure it exists to catch. The review is matched on `commit.oid ==
-head`, never on `submittedAt` or on a check's bucket: a review posted
-seconds after a push is usually on the previous head, and a "ran" check
-passes even when the review requests changes. Threads are filtered to
-unresolved ones opened by `author`, so your own replies and resolutions do
-not re-fire.
+The watch ends with a line either way, `REVIEWED` or `REVIEW WATCH
+TIMEOUT`, because a loop that only reports success is silent on exactly
+the failure it exists to catch. The watch matches the review on
+`commit.oid == head`, never on `submittedAt` or on a check's bucket. A
+review posted seconds after a push is usually on the previous head, and
+a "ran" check passes even when the review requests changes. The watch
+filters threads to unresolved ones opened by `author`, so your own
+replies and resolutions do not re-fire.
 
-A rebase-only push may earn no new review: a bot that keys on content
+A rebase-only push may earn no new review. A bot that keys on content
 treats a head whose diff has the same `git patch-id --stable` as the head
 it reviewed as already reviewed. Arm the watch on the reviewed head rather
-than waiting for a review that never comes; in a stack that means one
+than waiting for a review that never comes. In a stack that means one
 review per layer per iteration, not one per rebase.
 
 Then loop **one pass per iteration**: read every layer's findings before
 fixing any, fix them bottom-up, and push the whole stack once. A push
 after each layer rebases every layer above it and the bot re-reviews each
 moved head. Fix what is real, reply-and-resolve what is not
-(`/resolve-pr-comment`), then re-arm both watches on the new heads. A
-finding that names a compile error, a missing symbol, or a wrong
-identifier is checked against the CI job and a `grep` before it earns a
-commit — review bots read diffs, not build output. The loop ends when
+(`/resolve-pr-comment`), then re-arm both watches on the new heads. Check
+a finding that names a compile error, a missing symbol, or a wrong
+identifier against the CI job and a `grep` before it earns a commit.
+Review bots read diffs, not build output. The loop ends when
 every reviewed layer is review-clean (§1b) on its current head.
 
 ## 4. Read the state, not the label

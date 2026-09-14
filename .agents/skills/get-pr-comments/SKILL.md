@@ -75,9 +75,9 @@ comments; prefer GraphQL so each group has a thread `id` (`PRRT_…`).
 
 ## 3. Group feedback
 
-Group threads opened by the repo's review bot (`review_bot.author` in
+Group the threads the repo's review bot opened (`review_bot.author` in
 `.agents/orchestrator.json`, when the repo has one) under their own
-heading, so the user sees at a glance what blocks the bot's verdict.
+heading, so the user sees what blocks the bot's verdict.
 Skip noise: resolved + outdated with no new reply, bot boilerplate, and
 threads the user already handled in this conversation.
 

@@ -31,11 +31,11 @@ delegate it.
 
 ## Project bindings
 
-This agent is project-agnostic; the repo supplies the specifics. The packet
-carries the ones the orchestrator resolved from the repo's
+This agent is project-agnostic. The repo supplies the specifics. The
+packet carries the ones the orchestrator resolved from the repo's
 `.agents/orchestrator.json` (tracker, command wrapper, standards doc,
 contract path). Resolve the rest before your first edit, from the packet,
-the repo's `CLAUDE.md` / `AGENTS.md`, or its `docs/agents/` notes:
+the repo's `CLAUDE.md` or `AGENTS.md`, or its `docs/agents/` notes:
 
 - **Tracker** — how issues are read (Linear MCP, `gh issue view`, Jira);
   `docs/agents/issue-tracker.md` when the repo has one.
@@ -110,12 +110,12 @@ A binding you cannot resolve is a report line, not a guess.
 ## Fix rounds
 
 When the packet carries review or verify findings, you are fixing, not
-re-implementing. Start from the failing test: use the repo's `/tdd` skill
-when it has one, otherwise the same discipline by hand — write the test
-that fails because of the finding, then change the smallest amount of code
-until it passes. That test is the proof the dispatcher re-checks; touch
-nothing outside the finding's files unless the fix cannot be made without
-it, and say so in the report.
+re-implementing. Start from the failing test. Use the repo's `/tdd` skill
+when it has one, otherwise the same discipline by hand: write the test
+that fails because of the finding, then change the smallest amount of
+code until it passes. That test is the proof the dispatcher re-checks.
+Touch nothing outside the finding's files unless the fix cannot be made
+without it, and say so in the report.
 
 ## Done-bar
 
@@ -137,7 +137,7 @@ step is named as unverified.
 Your packet ends with an envelope footer that names a path under
 `<state_dir>/<ticket>/envelopes/`. Your last act is to write that JSON
 file. The footer names the required fields and the `validate.sh` command
-that checks them; `envelope.md` beside the task-orchestrator skill is the
+that checks them. `envelope.md` beside the task-orchestrator skill is the
 full contract. Take every value from a tool result you observed in this
 session. Write `"complete": true` as the final field. Then run the
 `validate.sh envelope <path>` command the footer gives and fix what it

@@ -40,7 +40,7 @@ refactor in passing. Your only write is the envelope.
 Your packet ends with an envelope footer that names a path under
 `<state_dir>/<ticket>/envelopes/`. Your last act is to write that JSON
 file. The footer names the required fields and the `validate.sh` command
-that checks them; `envelope.md` beside the task-orchestrator skill is the
+that checks them. `envelope.md` beside the task-orchestrator skill is the
 full contract. Take every value from a tool result you observed in this
 session. Write `"complete": true` as the final field. Then run the
 `validate.sh envelope <path>` command the footer gives and fix what it

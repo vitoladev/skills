@@ -28,9 +28,9 @@ and move on; building that infrastructure is not verification.
 ## Project bindings
 
 Resolve before scenario one. A task-orchestrator packet carries them on
-its Bindings line; otherwise read the repo's `.agents/orchestrator.json`
-when it has one, then `CLAUDE.md` / `AGENTS.md` or its `docs/agents/`
-notes:
+its Bindings line. Otherwise read the repo's `.agents/orchestrator.json`
+when it has one, then `CLAUDE.md` or `AGENTS.md`, then its
+`docs/agents/` notes:
 
 - **Command boundary** — whether commands run directly or through a wrapper
   (a `devcontainer` skill, `make`, a task runner). Every command below assumes

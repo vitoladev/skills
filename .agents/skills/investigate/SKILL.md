@@ -15,16 +15,16 @@ is evidence-backed prose a tired engineer can trust — and that
 
 ## Sources of truth (read in this order)
 
-The repo's `AGENTS.md` / `CLAUDE.md` names its sources of truth; read that
-section first and map it onto these tiers. With no such section, the
-tiers still hold, minus whatever the repo lacks:
+The repo's `AGENTS.md` or `CLAUDE.md` names its sources of truth. Read
+that section first and map it onto these tiers. With no such section,
+the tiers still hold, minus whatever the repo lacks:
 
 1. **Product / meaning:** the product knowledge base or PRD home the repo
    names — not tracker essays
 2. **Eng glossary + ADRs:** the repo's `CONTEXT.md` (or equivalent), then
    its ADR set for the decision under load
-3. **Tasks only:** the issue tracker (`tracker` in `.agents/orchestrator.json`
-   when the repo has one)
+3. **Tasks only:** the issue tracker (`tracker` in
+   `.agents/orchestrator.json` when the repo has one)
 4. **Code:** the packages the question names — prefer paths from a repo
    map / `AGENTS.md` over monorepo crawls
 5. **History:** `git log` / `git blame` on the hot paths; linked PR bodies

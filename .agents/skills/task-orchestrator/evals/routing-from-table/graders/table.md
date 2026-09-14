@@ -14,4 +14,6 @@ Pass when ALL of these hold; the exact wording does not matter:
 7. the file named as the dispatch-time source is `routing.json`
 
 Fail if any phase is given a different agent or tier, or if the answer
-says models come from agent frontmatter.
+says the orchestrator reads the model from agent frontmatter at dispatch
+time. Saying frontmatter is only the fallback when the table has no
+entry is correct, not a failure.

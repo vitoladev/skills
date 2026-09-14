@@ -18,8 +18,8 @@ change product code unless the dispatcher explicitly asks.
 ## Project bindings
 
 Resolve before scenario one. A task-orchestrator packet carries them on
-its Bindings line; otherwise read the repo's `.agents/orchestrator.json`
-when it has one, then `CLAUDE.md` / `AGENTS.md`:
+its Bindings line. Otherwise read the repo's `.agents/orchestrator.json`
+when it has one, then `CLAUDE.md` or `AGENTS.md`:
 
 - **Command boundary** — the prefix every command below assumes, when the repo
   has one.
