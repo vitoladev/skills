@@ -54,7 +54,7 @@ the host, and its tests are under `scripts/tests/`.
 | `restate` | Compress a noisy ask into a five-line frame before scoping |
 | `investigate` | How and why a subsystem works, cited from sources of truth, ADRs, and code |
 | `coding-guidelines` | Simplicity-first, surgical-change rules the executors condense |
-| `tdd` | Red-green vertical slices (vendored from Matt Pocock) |
+| `tdd` | Red-green vertical slices with test-shape and mocking rules |
 | `technical-writing` | Diátaxis and developer-style gate for docs, PR bodies, and skill markdown |
 | `unslop` | Strip AI tells from diffs, docs, and PR prose |
 | `show-me` | Pick a visual shape (table, tree, diff, mermaid) for a PR body or reply |
@@ -182,6 +182,18 @@ links. To change a skill or agent, edit the canon and the manifests, run
 `scripts/skills/sync-claude-skills.sh` and `scripts/agents/sync-agents.sh`,
 and commit both. Run `git config core.hooksPath .githooks` once per clone
 so pre-commit refuses a stale copy.
+
+## Credits
+
+Some skills started as copies of other people's work and have since
+diverged. `technical-writing` and `unslop` adapt the same-named skills
+from [pstack](https://github.com/vitoladev/pstack). `restate` follows
+poteto's indirect-prompt pattern as pstack's guide describes it, and
+`investigate` covers the ground of pstack's `/how` and `/why`. `tdd`
+comes from [mattpocock/skills](https://github.com/mattpocock/skills)
+(`skills/engineering/tdd`). `show-me` comes from
+[humanlayer/skills](https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md).
+None of them need the original plugin installed.
 
 Skills and agents are laid out differently because the tools are. Skills
 standardised on a neutral `.agents/skills/`. Subagents never did: Cursor

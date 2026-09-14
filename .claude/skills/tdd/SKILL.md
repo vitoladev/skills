@@ -8,13 +8,12 @@ description: |
 # edit that file and .claude/skill-models.json, never this copy.
 ---
 
-# Test-Driven Development
+# Test-driven development
 
-Vendored from [mattpocock/skills](https://github.com/mattpocock/skills)
-`skills/engineering/tdd` (with companions `tests.md`, `mocking.md`). Agents
-must not depend on the Claude `mattpocock-skills` plugin for this loop.
+`tests.md` and `mocking.md` beside this file carry the test-shape and
+mocking rules.
 
-## In this repo
+## In the consuming repo
 
 - Domain vocabulary: the repo's glossary (`CONTEXT.md` or equivalent) and ADRs.
 - Tests run through the repo's command boundary when it defines one (a

@@ -8,11 +8,10 @@ description: |
 
 # Unslop
 
-Edit text to remove AI patterns. Canonical copy for this repo (agents must
-not depend on the pstack plugin). Pattern catalog adapted from pstack
-`unslop`; rule numbers stay stable so other skills can cite them.
+Edit text to remove AI patterns. Rule numbers are stable so other skills
+can cite them.
 
-## In this repo
+## In the consuming repo
 
 - Keep the repo's glossary terms (`CONTEXT.md` or equivalent) and any
   one-name-per-thing list its `AGENTS.md` / `CLAUDE.md` carries. Do not

@@ -4,15 +4,11 @@ description: |
   Layered technical-writing standard (Diátaxis, Google developer style,
   STE, Global English). Use as /technical-writing when writing or reviewing
   docs, RFCs, readmes, skill markdown, PR descriptions, or commit messages.
-  Vendored — do not require the pstack plugin.
 ---
 
 # Technical writing
 
-Canonical copy for this repo (agents must not depend on the pstack plugin).
-Adapted from pstack `/technical-writing`.
-
-## In this repo
+## In the consuming repo
 
 - Keep the repo's glossary terms (`CONTEXT.md` or equivalent) and any
   one-name-per-thing list its `AGENTS.md` / `CLAUDE.md` carries. Do not

@@ -4,15 +4,11 @@ description: |
   Visual shape for a topic: call trees, file trees, component trees,
   Mermaid, structural diffs, focused sketches. Use as /show-me when
   drafting PR bodies, explaining a slice, or clarifying control flow.
-  Vendored from humanlayer/skills show-me — do not require that plugin.
 ---
 
 # Show me
 
-Canonical copy for this repo. Adapted from
-[humanlayer/skills `show-me`](https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md).
-
-## In this repo
+## In the consuming repo
 
 - Primary job here: make **PR bodies** (and review replies) show the
   slice shape — call tree, file tree, component tree, Mermaid sequence,

@@ -9,9 +9,8 @@ description: |
 
 # Investigate
 
-Stand-in for pstack `/how` + `/why` (not a fork of those skills). Output
-is evidence-backed prose a tired engineer can trust — and that
-`/ticket-scoping` or `/task-orchestrator` can consume.
+The output is evidence-backed prose a tired engineer can trust, in a
+shape `/ticket-scoping` or `/task-orchestrator` can consume.
 
 ## Sources of truth (read in this order)
 

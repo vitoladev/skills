@@ -12,10 +12,8 @@ description: |
 # Restate
 
 Draw the problem out of the agent before code. Do not lead with your own
-hypotheses — let the agent compress first, then correct the frame.
-
-Adapted from poteto's "indirect prompt" / supervise-someone-smarter pattern
-(pstack guide Pt. 2). Prefer this over micromanaging the fix.
+hypotheses. Let the agent compress first, then correct the frame. Prefer
+this over micromanaging the fix.
 
 ## 1. Gather the noisy source
 
