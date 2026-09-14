@@ -3,19 +3,20 @@
 Every agent the task-orchestrator dispatches ends its work by writing one
 JSON file: the envelope. The orchestrator reads nothing else. Prose in the
 agent's final message is context for a human. It never marks a phase done.
-The schema is `.agents/orchestrator/envelope.schema.json`.
+The schema is `scripts/envelope.schema.json` beside this file.
 
 ## Write it to the path the packet names
 
 The dispatch packet names the exact path:
 
 ```
-docs/ai/executions/<ticket>/envelopes/<slice>-<phase>-<attempt>.json
+<state_dir>/<ticket>/envelopes/<slice>-<phase>-<attempt>.json
 ```
 
-`<slice>` is the sub-issue, for example `VIT-216`. For a stack-level
-phase it is `stack`. The directory is gitignored. Write the file with a
-heredoc or the Write tool. The per-file lint hooks ignore `docs/ai/`.
+`<state_dir>` is the repo's `state_dir` binding (default
+`docs/ai/executions`). `<slice>` is the sub-issue, for example `ABC-13`.
+For a stack-level phase it is `stack`. The directory is gitignored. Write
+the file with a heredoc or the Write tool.
 
 ## Fill every required field
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "logieasy/orchestrator/checkpoint/v1",
+  "$id": "vitola-skills/task-orchestrator/checkpoint/v1",
   "title": "task-orchestrator checkpoint",
-  "description": "One file per parent ticket at docs/ai/executions/<ticket>.json. Written atomically (tmp + rename) on every phase transition; the source of truth a `resume <ticket>` reads.",
+  "description": "One file per parent ticket at <state_dir>/<ticket>.json. Written atomically (tmp + rename) on every phase transition; the source of truth a `resume <ticket>` reads.",
   "type": "object",
   "required": ["schema_version", "ticket", "harness", "environment", "run_id", "started_at", "updated_at", "worktree", "trunk", "trunk_sha", "phase", "current_slice", "slices", "last_envelope", "stopped"],
   "properties": {

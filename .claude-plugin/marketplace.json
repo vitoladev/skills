@@ -10,7 +10,7 @@
       "name": "vitola-skills",
       "displayName": "Vitola Skills",
       "source": "./",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "description": "Ticket scoping, stacked-PR orchestration, backend/frontend verification, and PR upkeep — 20 skills and 7 agents, all project-agnostic.",
       "author": {
         "name": "Victor"

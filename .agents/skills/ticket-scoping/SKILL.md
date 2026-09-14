@@ -33,9 +33,9 @@ one (`tracker`, `labels`), then `CLAUDE.md` or `AGENTS.md`, then its
 `docs/agents/` notes, or by asking:
 
 - **Tracker** — how issues are created, updated, and linked parent-to-child
-  (Linear MCP, `gh issue create` + sub-issues, Jira), and the identifier
-  shape (`ABC-12`, `#12`). `docs/agents/issue-tracker.md` when the repo has
-  one.
+  (Linear MCP, `gh issue create` + sub-issues, Jira), the identifier
+  shape (`ABC-12`, `#12`), and the repo doc `tracker.docs` names, when it
+  names one.
 - **Label set** — which of `backend` / `frontend` / `contract` / `infra`
   this repo's tracker actually carries. Reuse existing labels; do not create
   new ones without asking.

@@ -35,7 +35,7 @@ contract path). Resolve the rest before your first edit, from the packet,
 the repo's `CLAUDE.md` or `AGENTS.md`, or its `docs/agents/` notes:
 
 - **Tracker** — how issues are read (Linear MCP, `gh issue view`, Jira);
-  `docs/agents/issue-tracker.md` when the repo has one.
+  the repo doc `tracker.docs` names, when it names one.
 - **Backend package** — the app or module this slice owns, and its
   `test` / `lint` / `build` commands.
 - **Command boundary** — whether toolchain commands run directly or through

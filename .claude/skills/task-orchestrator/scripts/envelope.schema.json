@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "logieasy/orchestrator/envelope/v1",
+  "$id": "vitola-skills/task-orchestrator/envelope/v1",
   "title": "task-orchestrator agent envelope",
-  "description": "Every dispatched agent writes exactly one of these to the path its packet names (docs/ai/executions/<ticket>/envelopes/<slice>-<phase>-<attempt>.json). `complete: true` is the last field written; a file without it is a truncated run and is nudged, never accepted.",
+  "description": "Every dispatched agent writes exactly one of these to the path its packet names (<state_dir>/<ticket>/envelopes/<slice>-<phase>-<attempt>.json). `complete: true` is the last field written; a file without it is a truncated run and is nudged, never accepted.",
   "type": "object",
   "required": ["envelope_version", "ticket", "slice", "phase", "agent", "attempt", "status", "summary", "commands", "complete"],
   "properties": {
