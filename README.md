@@ -16,10 +16,16 @@ reported, never guessed.
 | | |
 |---|---|
 | `ticket-scoping` | PRD/spec → parent issue + backend/frontend/contract/infra sub-issues, each with numbered requirements and a pressure-tested plan |
-| `task-orchestrator` | Entry point that dispatches the coordinator |
-| `orchestration-coordinator` *(agent)* | Drives one parent issue to a published stack, gating every slice through verify → commit → review |
-| `backend-executor` / `frontend-executor` *(agents)* | Implement one slice each, carrying the code quality rules inline |
+| `task-orchestrator` | Drives one parent issue to a published stack in the calling session, gating every slice through verify → commit → review; checkpoints every phase so a killed run resumes where it stopped (`/task-orchestrator resume <id>`) |
+| `backend-executor` / `frontend-executor` *(agents)* | Implement one slice each, carrying the code quality rules inline; never delegate |
+| `backend-verifier` / `frontend-verifier` *(agents)* | Prove one slice's acceptance criteria with executed requests or a real browser; never fix |
+| `code-reviewer` *(agent)* | Standards + Spec review of one slice's diff in one context; P0–P3 with a verdict |
 | `committer` *(agent)* | Owns the gate's commit step |
+| `fix-checker` *(agent)* | After a fix round, answers resolved / not-resolved / introduced-new for one finding |
+
+The orchestrator's runtime (checkpoint, envelope, resume, route, sync)
+lives in `task-orchestrator/scripts/`. It needs bash, jq, git, and gh on
+the host, and its tests are under `scripts/tests/`.
 
 **Verification**
 
@@ -40,6 +46,19 @@ reported, never guessed.
 | `monitor-ci-and-reviews` | Watch checks and incoming review until they settle, then triage |
 | `pr-preview-media` | Verification recordings → MP4s and stills uploaded into the PR body with `gh --attach` |
 
+**Writing and thinking**
+
+| | |
+|---|---|
+| `restate` | Compress a noisy ask into a five-line frame before scoping |
+| `investigate` | How and why a subsystem works, cited from sources of truth, ADRs, and code |
+| `coding-guidelines` | Simplicity-first, surgical-change rules the executors condense |
+| `tdd` | Red-green vertical slices (vendored from Matt Pocock) |
+| `technical-writing` | Diátaxis and developer-style gate for docs, PR bodies, and skill markdown |
+| `unslop` | Strip AI tells from diffs, docs, and PR prose |
+| `show-me` | Pick a visual shape (table, tree, diff, mermaid) for a PR body or reply |
+| `gh-stack` | Stacked branches and PRs with the gh-stack extension |
+
 **Environment**
 
 | | |
@@ -55,43 +74,101 @@ reported, never guessed.
 /plugin install vitola-skills@vitola
 ```
 
-Or vendor it into a single project by copying `.agents/skills/` and `agents/`.
+Or vendor it into a single project: `git subtree add --prefix .agents/vendor/vitola-skills https://github.com/vitoladev/skills <tag> --squash`, then symlink the rendered `.claude/skills/*` and `.claude/agents/*` into the repo's own `.claude/`.
 
 **Any agent** — via the [`skills`](https://github.com/vercel-labs/skills)
 CLI, which needs no registry entry and discovers `.agents/skills/` directly:
 
 ```bash
 npx skills add vitoladev/skills            # pick interactively
-npx skills add vitoladev/skills --all      # all 11 skills, all detected agents
+npx skills add vitoladev/skills --all      # all 20 skills, all detected agents
 npx skills add vitoladev/skills --list     # just look
 ```
 
 It symlinks into each detected agent's directory (`--copy` to copy instead)
-and supports 75+ agents. Note it installs **skills only** — the four agents
-in `agents/` do not come along, so `task-orchestrator` will not find its
-coordinator this way. Use the plugin, or copy `agents/` in by hand, if you
-want the orchestration set.
+and supports 75+ agents. It installs skills only. The agents in
+`.agents/agents/` do not come along, so `task-orchestrator` has nothing
+to dispatch this way. For the orchestration set, use the plugin, the
+subtree, or copy `.claude/agents/` in by hand.
 
 **Codex** — clone or copy `.agents/skills/` into the repo (or
 `~/.agents/skills/` for personal scope). Codex reads that path natively; no
 manifest needed.
 
-**Cursor** — copy `agents/*.md` into `.claude/agents/` (Cursor searches
-`.cursor/agents`, `.claude/agents` and `.codex/agents`). Note that Cursor
-ignores the `tools:` frontmatter field, so an agent's prose boundaries are
-what constrain it there.
+**Cursor** — the plugin route renders `.cursor/agents/` too; otherwise copy
+`.claude/agents/*.md` into the repo's `.claude/agents/` (Cursor searches
+`.cursor/agents`, `.claude/agents` and `.codex/agents`). Cursor ignores the
+`tools:` frontmatter field, so an agent's prose boundaries are what
+constrain it there.
+
+## Bindings
+
+Nothing here names a tracker, a standards doc, a command wrapper, or a
+review bot. The orchestrator reads them from `routing.json` (the defaults,
+inside the `task-orchestrator` skill) with the consuming repo's
+`.agents/orchestrator.json` merged over it. Objects merge key by key.
+Arrays and scalars in the overlay replace the default. A required binding
+that is still `null` after the merge stops the run with its name. The
+orchestrator never guesses one.
+
+```jsonc
+// .agents/orchestrator.json in the consuming repo
+{
+  "bindings": {
+    "tracker":       { "kind": "linear", "team": "ABC", "id_pattern": "^ABC-\\d+$" },
+    "standards_doc": "docs/CODING_STANDARDS.md",
+    "command":       { "wrapper": "scripts/devcontainer/exec.sh" },
+    "review_bot": {                                   // or null: CI is the only gate
+      "trigger": "gh pr comment $PR --body '@reviewer review'",  // null: the bot reviews on its own
+      "author":  "reviewer[bot]",                     // login its reviews and threads carry
+      "check":   "reviewer",                          // "the reviewer ran" check; optional
+      "verdict": "reviewer-approval",                 // must pass on HEAD; null: see below
+      "skip_on": ["docs-only"]
+    }
+  }
+}
+```
+
+The repo describes its review bot; no skill names one. Whichever bot a
+repo runs, the skills read this one shape. `author` is the only required
+key. When `verdict` is null, a layer is review-clean when the latest
+review by `author` is on HEAD and no thread that `author` opened is
+unresolved. `skip_on` lists the layer classes the bot never reviews. A
+layer is `docs-only` when every changed path ends in `.md`.
+
+To drop a concern the repo does not scope, set its label to `null`
+(`"labels": { "contract": null }`).
+
+The gate has one setting, beside the bindings: `"gate": { "max_fix_rounds": 3 }`.
+It is the number of fix, commit, and fix-check rounds a slice may spend
+on P0 and P1 findings. Past it the slice is blocked and the run stops
+without opening that slice's PR.
+
+`task-orchestrator/scripts/bindings.sh` prints the merged result;
+`bindings.sh --check` names what is still unresolved.
 
 ## Layout
 
 ```
-.agents/skills/     canonical skills — the cross-tool convention Codex reads
-.claude/skills/     symlinks into the above (Claude Code reads only here)
-agents/             canonical agents — also the Claude plugin default location
-.claude/agents/     symlinks into the above (Claude Code, Cursor and Codex read here)
-.claude-plugin/     plugin + marketplace manifests
-.devcontainer/      reference devcontainer runtime
-scripts/devcontainer/   up.sh, exec.sh, down.sh — keyed per git worktree
+.agents/skills/         canonical skills, harness-neutral; Codex and `npx skills` read here
+.agents/agents/         canonical agents, harness-neutral
+.agents/agent-manifest.json   per-harness agent frontmatter (tools, fallback model)
+.claude/skill-models.json     per-skill Claude Code frontmatter (model, fork)
+.claude/skills/         rendered from the canon; Claude Code and the plugin read here
+.claude/agents/         rendered from the canon; Claude Code, Cursor, and Codex read here
+.cursor/agents/         rendered from the canon; Cursor reads here
+.claude-plugin/         plugin + marketplace manifests
+.githooks/              pre-commit: rendered copies match the canon, runtime tests pass
+scripts/skills/, scripts/agents/   the two render scripts (`--check` for CI)
+.devcontainer/, scripts/devcontainer/   reference devcontainer runtime, keyed per worktree
 ```
+
+The rendered directories are committed as real files, not symlinks,
+because a plugin install copies the tree and does not promise to keep
+links. To change a skill or agent, edit the canon and the manifests, run
+`scripts/skills/sync-claude-skills.sh` and `scripts/agents/sync-agents.sh`,
+and commit both. `git config core.hooksPath
+.githooks` once per clone makes pre-commit refuse a stale copy.
 
 Skills and agents diverge because the ecosystems did. Skills standardised on
 a neutral `.agents/skills/`; subagents never did — Cursor and Codex instead

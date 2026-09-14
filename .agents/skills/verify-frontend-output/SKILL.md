@@ -17,7 +17,9 @@ change product code unless the dispatcher explicitly asks.
 
 ## Project bindings
 
-Resolve before scenario one:
+Resolve before scenario one. A task-orchestrator packet carries them on
+its Bindings line. Otherwise read the repo's `.agents/orchestrator.json`
+when it has one, then `CLAUDE.md` or `AGENTS.md`:
 
 - **Command boundary** — the prefix every command below assumes, when the repo
   has one.
@@ -81,9 +83,16 @@ Prefer the highest level the criterion needs:
    third-party redirect. Appropriate for signed-out redirects, POST semantics,
    and token exposure checks.
 3. **Controlled response** — `page.route()` supplies a deliberate API state
-   while the real app renders. Use only when the criterion is a frontend state
-   that cannot be reached deterministically through the local stack. Label it
-   as controlled-response proof, never end-to-end proof.
+   while the real app renders. This is the default for error, cap and edge
+   states (a 413 over a line cap, a failed job, a retryable error) and for
+   any state whose live version needs infrastructure the local stack does
+   not run (a queue consumer, an object store, hundreds of seeded rows).
+   Label it as controlled-response proof, never end-to-end proof.
+
+Work inside the time budget the dispatch names (30 minutes when it names
+none) and report what you have when it runs out. Prove each happy-path
+journey live once; do not build services or seed bulk data to reach a
+status code that a controlled response proves.
 
 Use existing committed coverage before writing scratch coverage. Put
 disposable specs in the scratch location from the bindings so they stay inside

@@ -1,1 +1,0 @@
-../../agents/orchestration-coordinator.md

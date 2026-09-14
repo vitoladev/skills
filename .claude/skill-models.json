@@ -1,0 +1,26 @@
+{
+  "resolve-pr-comment": {
+    "model": "haiku",
+    "fork": true
+  },
+  "pr-preview-media": {
+    "model": "sonnet",
+    "fork": true
+  },
+  "get-pr-comments": {
+    "model": "sonnet",
+    "fork": true
+  },
+  "maintain-pr-description": {
+    "model": "sonnet",
+    "fork": true
+  },
+  "monitor-ci-and-reviews": {
+    "model": "sonnet",
+    "fork": true
+  },
+  "create-pr": {
+    "model": "sonnet",
+    "fork": false
+  }
+}

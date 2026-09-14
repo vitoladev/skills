@@ -139,8 +139,45 @@ Then run the authenticated asset check from
 An attach that partly failed still rewrites the body, so the markdown looking
 right proves nothing.
 
+## 6. Ask for review, then watch
+
+Opening the PR is not the end of the layer. Read the repo's review-bot
+binding: `review_bot` in `.agents/orchestrator.json`, or the repo's
+`CLAUDE.md` when it has no overlay. The `task-orchestrator` skill's
+`scripts/bindings.sh review_bot` prints the merged value. Then classify
+the layer:
+
+```bash
+base=$(gh pr view --json baseRefName -q .baseRefName)
+git diff --name-only "origin/$base"...HEAD
+```
+
+A layer is docs-only when every changed path ends in `.md`. Otherwise it
+is code. When `review_bot` is null, post nothing. When its `trigger` is
+set and the layer's class is not in its `skip_on` list, post the trigger
+once:
+
+```bash
+gh pr comment <n> --body '<review_bot.trigger body>'
+```
+
+A null `trigger` means the bot reviews every PR on its own. On a
+docs-only layer, run the repo's writing gates instead (`/technical-writing`
+then `/unslop`, when it has them) and commit the prose fixes on the
+branch.
+
+Then run `/monitor-ci-and-reviews` on this PR and on every layer below it
+in a stack. That skill owns the watches, the triage loop, and when to call
+`/resolve-pr-comment`. An open PR is not a green PR. A layer is
+merge-ready only when the required checks pass on the current head and,
+for a layer the bot reviews, the layer is review-clean. When `verdict` is
+set, review-clean means that check passes on the current head. When
+`verdict` is null, it means the latest review by `author` is on the
+current head and no thread that `author` opened is unresolved.
+
 Done when the PR is open against the right base; every surface the diff
 touches appears in Preview, each changed one with both states and each
 greenfield one saying so; every asset answers 200 as an authenticated viewer;
-and a reviewer reading only the body would describe the same slice
-`git diff <base>...HEAD` shows.
+a reviewer reading only the body would describe the same slice
+`git diff <base>...HEAD` shows; and the review trigger, when the binding
+has one, is posted.
